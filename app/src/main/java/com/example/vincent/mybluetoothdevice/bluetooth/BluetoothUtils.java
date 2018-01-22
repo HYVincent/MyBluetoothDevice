@@ -516,6 +516,10 @@ public class BluetoothUtils {
                     }else{
                         Log.d(TAG, "onConnectionStateChange: 设备断开连接...");
                     }
+                }else if (newState == BluetoothProfile.STATE_CONNECTED) {//断开设备连接
+                    gatt.discoverServices();
+                } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                    gatt.close();
                 }
             }else {
                 if(statusChangeListener != null){
