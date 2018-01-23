@@ -3,15 +3,13 @@ package com.example.vincent.mybluetoothdevice;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.example.vincent.mybluetoothdevice.bluetooth.BleControl;
 import com.example.vincent.mybluetoothdevice.bluetooth.BluetoothEntity;
-import com.example.vincent.mybluetoothdevice.bluetooth.BluetoothUtils;
 
 import java.util.List;
 
@@ -65,18 +63,22 @@ public class BlueListAdapter extends RecyclerView.Adapter<BlueListAdapter.BlueLi
             case 0:
                 holder.tvStatus.setText("");
                 break;
-            case BluetoothUtils.BLUETOOTH_STATUS_CONNECTING:
+            case BleControl.BLE_STATUS_SCAN_CONNECTING:
                 holder.tvStatus.setText("正在连接蓝牙..");
                 dialog.setMessage("正在连接蓝牙..");
                 dialog.show();
                 break;
-            case BluetoothUtils.BLUETOOTH_STATUS_CONNECT_SUCCESS:
+            case BleControl.BLE_STATUS_CONNECT_SUCCESS:
                 holder.tvStatus.setText("蓝牙连接成功");
                 dialog.dismiss();
                 break;
-            case BluetoothUtils.BLUETOOTH_STATUS_CONNECT_FAIL:
+            case BleControl.BLE_STATUS_CONNECT_FAILE:
                 dialog.dismiss();
                 holder.tvStatus.setText("蓝牙连接失败");
+                break;
+            case BleControl.BLE_STATUS_CONNECT_TIME_OUT:
+                dialog.dismiss();
+                holder.tvStatus.setText("蓝牙连接超时");
                 break;
             default:
                 dialog.dismiss();
