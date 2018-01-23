@@ -14,13 +14,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.vincent.mybluetoothdevice.bluetooth.BleControl;
 import com.example.vincent.mybluetoothdevice.bluetooth.BluetoothEntity;
 import com.example.vincent.mybluetoothdevice.utils.HexUtil;
-import com.example.vincent.mybluetoothdevice.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -178,17 +176,17 @@ public class MainActivity extends AppCompatActivity {
                 addLogs(2,"蓝牙连接成功。。");
                 break;
             case BleControl.BLE_STATUS_BREAK_RECONNECTION:
+                addLogs(2,"设备已断开，正在重新连接..");
                 refreshView(connectPosition,BleControl.BLE_STATUS_BREAK_RECONNECTION);
                 break;
             case BleControl.BLE_STATUS_CONNECT_TIME_OUT:
+                addLogs(2,"设备连接超时");
                 refreshView(connectPosition,BleControl.BLE_STATUS_CONNECT_TIME_OUT);
                 break;
             case BleControl.BLE_STATUS_SEND_DATE_FAILE:
-                toastMsg("数据发送失败");
                 addLogs(2,"数据发送失败。。");
                 break;
             case BleControl.BLE_STATUS_SEND_DATE_SUCCESS:
-                toastMsg("数据发送成功");
                 addLogs(2,"数据发送成功");
                 break;
             case BleControl.BLE_STATUS_SCAN_START:
@@ -196,7 +194,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "bluetoothStatus: 开始扫描蓝牙..");
                 break;
             case BleControl.BLE_STATUS_SCAN_STOP:
-                addLogs(2,"蓝牙扫描停止..");
                 Log.d(TAG, "bluetoothStatus: 蓝牙扫描停止。。");
                 if(bluetoothDevices.size() == 0){
                     addLogs(2,"没有找到设备..");
@@ -225,6 +222,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getDatas(List<BluetoothDevice> bluetoothDevicess) {
+        addLogs(2,"持续扫描中，找到了"+bluetoothDevicess.size()+"个设备..");
         bluetoothDevices.clear();
         for (BluetoothDevice bluetoothDevice: bluetoothDevicess){
             BluetoothEntity entity = new BluetoothEntity();
