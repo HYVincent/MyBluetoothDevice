@@ -190,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
                 addLogs(2,"数据发送成功");
                 break;
             case BleControl.BLE_STATUS_SCAN_START:
+                dataEntities.clear();
                 addLogs(2,"开始扫描蓝牙..");
                 Log.d(TAG, "bluetoothStatus: 开始扫描蓝牙..");
                 break;
