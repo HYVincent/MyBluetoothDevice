@@ -198,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
                 if(bluetoothDevices.size() == 0){
                     addLogs(2,"没有找到设备..");
                 }else {
-                    addLogs(2,"停止扫描,已找到"+bluetoothDevices.size()+"个设备");
+                    addLogs(2,"停止扫描,总共找到"+bluetoothDevices.size()+"个设备");
                 }
                 break;
             default:break;
