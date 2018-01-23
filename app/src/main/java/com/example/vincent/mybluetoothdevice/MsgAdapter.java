@@ -46,10 +46,19 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
     @Override
     public void onBindViewHolder(MsgViewHolder holder, int position) {
         DataEntity dataEntity = data.get(position);
-        if(dataEntity.getType() == 0){
-            holder.tvType.setText("收:");
-        }else {
-            holder.tvType.setText("发:");
+        switch (dataEntity.getType()){
+            case 0:
+                holder.tvType.setText("收:");
+                break;
+            case 1:
+                holder.tvType.setText("发:");
+                break;
+            case 2:
+                holder.tvType.setText("状态:");
+                break;
+            default:
+                holder.tvType.setText("其他:");
+                break;
         }
         holder.tvTime.setText(DateUtils.getDateString(DateUtils.DATE_FORMAT_ALL2,dataEntity.getTime()));
         holder.tvMsg.setText(dataEntity.getMsg());

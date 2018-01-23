@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import com.example.vincent.mybluetoothdevice.bluetooth.BleControl;
 import com.example.vincent.mybluetoothdevice.bluetooth.BluetoothEntity;
+import com.example.vincent.mybluetoothdevice.utils.HexUtil;
 import com.example.vincent.mybluetoothdevice.utils.StringUtils;
 
 import java.util.ArrayList;
@@ -35,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
     private MsgAdapter msgAdapter;
     private EditText etInput;
     private Button btnSend;
-    private TextView tvStatus;
 
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -44,13 +44,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         BleControl.getInstance().initBle(MainActivity.this);
+
         rlv = findViewById(R.id.rlv_list);
         rlvLog = findViewById(R.id.rlv_list_data);
         initRecycleView();
         initRecycleViewLog();
-        tvStatus = findViewById(R.id.textView);
         etInput = findViewById(R.id.et_input);
         btnSend = findViewById(R.id.btn_send);
+        if(BleControl.getInstance().isEnable()){
+            addLogs(2,"蓝牙已经打开");
+        }else {
+            addLogs(2,"蓝牙已关闭");
+        }
         findViewById(R.id.textView2).setOnClickListener(new View.OnClickListener() {
             @TargetApi(Build.VERSION_CODES.LOLLIPOP)
             @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -105,19 +110,14 @@ public class MainActivity extends AppCompatActivity {
         BleControl.getInstance().setDataChangeNotificationListener(new BleControl.BleDataChangeNotificationListener() {
             @Override
             public void onDatas(byte[] datas) {
-                Log.d(TAG, "onDatas: 收到数据-->"+ StringUtils.byteToString(datas));
-                DataEntity dataEntity = new DataEntity();
-                dataEntity.setMsg(StringUtils.byteToString(datas));
-                dataEntity.setType(0);
-                dataEntity.setTime(System.currentTimeMillis());
-                dataEntities.add(dataEntity);
-                msgAdapter.setData(dataEntities);
+                addLogs(0,HexUtil.bytesToHexString(datas));
             }
         });
     }
 
+    private LinearLayoutManager linearLayoutManager;
     private void initRecycleViewLog() {
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(MainActivity.this);
+        linearLayoutManager = new LinearLayoutManager(MainActivity.this);
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         rlvLog.setLayoutManager(linearLayoutManager);
         msgAdapter = new MsgAdapter(MainActivity.this);
@@ -137,55 +137,45 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         BleControl.getInstance().writeBuffer(s);
-        DataEntity dataEntity = new DataEntity();
-        dataEntity.setMsg(s);
-        dataEntity.setType(1);
-        dataEntity.setTime(System.currentTimeMillis());
-        dataEntities.add(dataEntity);
-        msgAdapter.setData(dataEntities);
+        addLogs(1,s);
     }
+
 
     private void checkStatus(int status) {
         switch (status) {
             case BluetoothAdapter.SCAN_MODE_NONE:
-                Log.d(TAG, "onReceive: 没有扫描到设备");
-                tvStatus.setText("没有扫描到设备");
+                addLogs(2,"没有扫描到设备");
                 break;
             case BluetoothAdapter.SCAN_MODE_CONNECTABLE:
                 Log.d(TAG, "onReceive: 可连接。。。");
                 break;
             case BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE:
                 Log.d(TAG, "onReceive: 可被发现...");
-                tvStatus.setText("可被发现");
                 break;
             case BluetoothAdapter.STATE_TURNING_ON:
-                tvStatus.setText("正在打开蓝牙..");
-                Log.d(TAG, "onReceive: 正在打开蓝牙。。");
+                addLogs(2,"正在打开蓝牙。。");
+                Log.d(TAG, "onReceive: ");
                 break;
             case BluetoothAdapter.STATE_ON:
-                tvStatus.setText("蓝牙打开");
-                Log.d(TAG, "onReceive: 蓝牙打开");
-                Log.e("TAG", "STATE_ON");
+                addLogs(2,"蓝牙打开。。");
                 break;
             case BluetoothAdapter.STATE_TURNING_OFF:
-                tvStatus.setText("蓝牙正在关闭....");
-                Log.d(TAG, "onReceive: 蓝牙正在关闭..");
+                addLogs(2,"蓝牙正在关闭。。");
                 break;
             case BluetoothAdapter.STATE_OFF:
-                tvStatus.setText("蓝牙关闭");
-                Log.d(TAG, "onReceive: 蓝牙关闭");
+                addLogs(2,"蓝牙关闭。。");
                 break;
             case BleControl.BLE_STATUS_SCAN_CONNECTING:
-                Log.d(TAG, "bluetoothStatus: 正在连接蓝牙...");
+                addLogs(2,"正在连接蓝牙。。");
                 refreshView(connectPosition,BleControl.BLE_STATUS_SCAN_CONNECTING);
                 break;
             case BleControl.BLE_STATUS_CONNECT_FAILE:
                 refreshView(connectPosition,BleControl.BLE_STATUS_CONNECT_FAILE);
-                Log.d(TAG, "bluetoothStatus: 蓝牙连接失败");
+                addLogs(2,"蓝牙连接失败。。");
                 break;
             case BleControl.BLE_STATUS_CONNECT_SUCCESS:
                 refreshView(connectPosition,BleControl.BLE_STATUS_CONNECT_SUCCESS);
-                Log.d(TAG, "bluetoothStatus: 蓝牙连接成功");
+                addLogs(2,"蓝牙连接成功。。");
                 break;
             case BleControl.BLE_STATUS_BREAK_RECONNECTION:
                 refreshView(connectPosition,BleControl.BLE_STATUS_BREAK_RECONNECTION);
@@ -195,23 +185,43 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case BleControl.BLE_STATUS_SEND_DATE_FAILE:
                 toastMsg("数据发送失败");
+                addLogs(2,"数据发送失败。。");
                 break;
             case BleControl.BLE_STATUS_SEND_DATE_SUCCESS:
                 toastMsg("数据发送成功");
+                addLogs(2,"数据发送成功");
                 break;
             case BleControl.BLE_STATUS_SCAN_START:
+                addLogs(2,"开始扫描蓝牙..");
                 Log.d(TAG, "bluetoothStatus: 开始扫描蓝牙..");
                 break;
             case BleControl.BLE_STATUS_SCAN_STOP:
+                addLogs(2,"蓝牙扫描停止..");
                 Log.d(TAG, "bluetoothStatus: 蓝牙扫描停止。。");
                 if(bluetoothDevices.size() == 0){
-                    toastMsg("没有找到设备..");
+                    addLogs(2,"没有找到设备..");
                 }else {
-                    toastMsg("停止扫描");
+                    addLogs(2,"停止扫描,已找到"+bluetoothDevices.size()+"个设备");
                 }
                 break;
             default:break;
         }
+    }
+
+    private void addLogs(int type,String content){
+        DataEntity dataEntity = new DataEntity();
+//                dataEntity.setMsg(StringUtils.byteToString(datas));
+        dataEntity.setMsg(content);
+        dataEntity.setType(type);
+        dataEntity.setTime(System.currentTimeMillis());
+        dataEntities.add(dataEntity);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                msgAdapter.setData(dataEntities);
+                rlvLog.smoothScrollBy(dataEntities.size(),500);
+            }
+        });
     }
 
     private void getDatas(List<BluetoothDevice> bluetoothDevicess) {

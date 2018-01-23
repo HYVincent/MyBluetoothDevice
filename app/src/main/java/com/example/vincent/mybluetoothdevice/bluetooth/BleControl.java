@@ -136,6 +136,11 @@ public class BleControl {
             if(mBleAdapter == null){
                 Log.e(TAG, "initBle: Bluetooth adapter is null");
             }
+            if(isEnable()){
+                Log.d(TAG, "initBle: bluetooth status is open");
+            }else {
+                Log.d(TAG, "initBle: bluetooth status is close");
+            }
         }
         return this;
     }

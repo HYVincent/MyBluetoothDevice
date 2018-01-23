@@ -13,7 +13,7 @@ public class DataEntity {
 
     private String msg;
     private long time;
-    //0 收 1 发..
+    //0 收 1 发.. 2 状态
     private int type;
 
     public String getMsg() {
