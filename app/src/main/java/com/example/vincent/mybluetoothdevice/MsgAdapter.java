@@ -1,6 +1,7 @@
 package com.example.vincent.mybluetoothdevice;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,18 +47,28 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
     @Override
     public void onBindViewHolder(MsgViewHolder holder, int position) {
         DataEntity dataEntity = data.get(position);
+        if(dataEntity == null){
+            return;
+        }
         switch (dataEntity.getType()){
             case 0:
-                holder.tvType.setText("收:");
+                holder.tvType.setText("收到:");
+                holder.tvType.setTextColor(ContextCompat.getColor(mContext,R.color.colorPrimaryDark));
+                holder.tvMsg.setTextColor(ContextCompat.getColor(mContext,R.color.colorPrimaryDark));
                 break;
             case 1:
-                holder.tvType.setText("发:");
+                holder.tvType.setText("发送:");
+                holder.tvType.setTextColor(ContextCompat.getColor(mContext,R.color.colorPrimaryDark));
+                holder.tvMsg.setTextColor(ContextCompat.getColor(mContext,R.color.colorPrimaryDark));
                 break;
             case 2:
                 holder.tvType.setText("状态:");
+                holder.tvType.setTextColor(ContextCompat.getColor(mContext,R.color.colorAccent));
+                holder.tvMsg.setTextColor(ContextCompat.getColor(mContext,R.color.colorAccent));
                 break;
             default:
                 holder.tvType.setText("其他:");
+                holder.tvMsg.setTextColor(ContextCompat.getColor(mContext,R.color.colorPrimaryDark));
                 break;
         }
         holder.tvTime.setText(DateUtils.getDateString(DateUtils.DATE_FORMAT_ALL2,dataEntity.getTime()));

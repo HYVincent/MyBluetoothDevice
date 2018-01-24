@@ -1,10 +1,12 @@
 package com.example.vincent.mybluetoothdevice;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -19,11 +21,15 @@ import android.widget.Toast;
 import com.example.vincent.mybluetoothdevice.bluetooth.BleControl;
 import com.example.vincent.mybluetoothdevice.bluetooth.BluetoothEntity;
 import com.example.vincent.mybluetoothdevice.utils.HexUtil;
+import com.example.vincent.mybluetoothdevice.utils.JNIUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
+
+public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks{
 
     private static final String TAG = "BluetoothDevice";
     private List<BluetoothEntity> bluetoothDevices = new ArrayList<>();
@@ -42,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         BleControl.getInstance().initBle(MainActivity.this);
-
         rlv = findViewById(R.id.rlv_list);
         rlvLog = findViewById(R.id.rlv_list_data);
         initRecycleView();
@@ -50,9 +55,9 @@ public class MainActivity extends AppCompatActivity {
         etInput = findViewById(R.id.et_input);
         btnSend = findViewById(R.id.btn_send);
         if(BleControl.getInstance().isEnable()){
-            addLogs(2,"蓝牙已经打开");
+            addLogs(2,"蓝牙已经打开!");
         }else {
-            addLogs(2,"蓝牙已关闭");
+            addLogs(2,"蓝牙已关闭!");
         }
         findViewById(R.id.textView2).setOnClickListener(new View.OnClickListener() {
             @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -72,23 +77,14 @@ public class MainActivity extends AppCompatActivity {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onClick(View view) {
-                if(bluetoothDevices != null && bluetoothDevices.size()>0){
-                    bluetoothDevices.clear();
-                    adapter.setDatas(bluetoothDevices);
-                }
-                BleControl.getInstance().scanBle(new BleControl.BleScanResultListener() {
-                    @Override
-                    public void onScanResult(List<BluetoothDevice> bluetoothDevices) {
-                        getDatas(bluetoothDevices);
-                    }
-                });
+                checkPermissions();
             }
         });
         findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onClick(View view) {
-                BleControl.getInstance().stopBleScan();
+                BleControl.getInstance().stopBleScan(false);
             }
         });
 
@@ -102,6 +98,8 @@ public class MainActivity extends AppCompatActivity {
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                String tag =  HexUtil.bytesToHexString(JNIUtils.getInstance().setSystemTime(1,1,1,1,1,1));
+                Log.d(TAG, "Test: "+tag);
                 sendData(etInput.getText().toString());
             }
         });
@@ -109,11 +107,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDatas(byte[] datas) {
                 addLogs(0,HexUtil.bytesToHexString(datas));
+                String redata = HexUtil.bytesToHexString(JNIUtils.getInstance().analysisFromBleData(datas));
+                Log.d(TAG, "onDatas: "+redata);
             }
         });
     }
 
     private LinearLayoutManager linearLayoutManager;
+
     private void initRecycleViewLog() {
         linearLayoutManager = new LinearLayoutManager(MainActivity.this);
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -131,79 +132,99 @@ public class MainActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void sendData(String s) {
         if(TextUtils.isEmpty(s)){
-            toastMsg("未输入");
+            addLogs(2,"请输入指令!");
             return;
         }
-        BleControl.getInstance().writeBuffer(s);
-        addLogs(1,s);
+        String str = HexUtil.bytesToHexString(JNIUtils.getInstance().setSystemTime(1,1,1,1,1,1));
+        BleControl.getInstance().writeBuffer(str);
+        addLogs(1,str);
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void checkStatus(int status) {
         switch (status) {
             case BluetoothAdapter.SCAN_MODE_NONE:
                 addLogs(2,"没有扫描到设备");
                 break;
             case BluetoothAdapter.SCAN_MODE_CONNECTABLE:
-                Log.d(TAG, "onReceive: 可连接。。。");
+                Log.d(TAG, "onReceive: 可连接...");
                 break;
             case BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE:
                 Log.d(TAG, "onReceive: 可被发现...");
                 break;
             case BluetoothAdapter.STATE_TURNING_ON:
-                addLogs(2,"正在打开蓝牙。。");
+                addLogs(2,"正在打开蓝牙...");
                 Log.d(TAG, "onReceive: ");
                 break;
             case BluetoothAdapter.STATE_ON:
-                addLogs(2,"蓝牙打开。。");
+                addLogs(2,"蓝牙已打开!");
                 break;
             case BluetoothAdapter.STATE_TURNING_OFF:
-                addLogs(2,"蓝牙正在关闭。。");
+                addLogs(2,"蓝牙正在关闭...");
                 break;
             case BluetoothAdapter.STATE_OFF:
-                addLogs(2,"蓝牙关闭。。");
+                addLogs(2,"蓝牙已关闭!");
+                break;
+            case BleControl.BLE_STATUS_SCAN_BREAK:
+                addLogs(2,"用户手动停止蓝牙扫描!");
                 break;
             case BleControl.BLE_STATUS_SCAN_CONNECTING:
-                addLogs(2,"正在连接蓝牙。。");
+                addLogs(2,"正在连接蓝牙...");
                 refreshView(connectPosition,BleControl.BLE_STATUS_SCAN_CONNECTING);
                 break;
             case BleControl.BLE_STATUS_CONNECT_FAILE:
                 refreshView(connectPosition,BleControl.BLE_STATUS_CONNECT_FAILE);
-                addLogs(2,"蓝牙连接失败。。");
+                addLogs(2,"蓝牙连接失败!");
                 break;
             case BleControl.BLE_STATUS_CONNECT_SUCCESS:
                 refreshView(connectPosition,BleControl.BLE_STATUS_CONNECT_SUCCESS);
-                addLogs(2,"蓝牙连接成功。。");
+                addLogs(2,"蓝牙连接成功!");
+                break;
+            case BleControl.BLE_CONNECT_STATUS_UNBLOCKED:
+                addLogs(2,"已创建可通信交流通道，可正常发送数据!");
+                getSystemFunction();
+                break;
+            case BleControl.BLE_CONNECT_STATUS_BLOCKED:
+                addLogs(2,"创建可通信交流通道失败，数据发送将会失败");
                 break;
             case BleControl.BLE_STATUS_BREAK_RECONNECTION:
                 addLogs(2,"设备已断开，正在重新连接..");
                 refreshView(connectPosition,BleControl.BLE_STATUS_BREAK_RECONNECTION);
                 break;
             case BleControl.BLE_STATUS_CONNECT_TIME_OUT:
-                addLogs(2,"设备连接超时");
+                addLogs(2,"设备连接超时!");
                 refreshView(connectPosition,BleControl.BLE_STATUS_CONNECT_TIME_OUT);
                 break;
             case BleControl.BLE_STATUS_SEND_DATE_FAILE:
-                addLogs(2,"数据发送失败。。");
+                addLogs(2,"数据发送失败!");
                 break;
             case BleControl.BLE_STATUS_SEND_DATE_SUCCESS:
-                addLogs(2,"数据发送成功");
+                addLogs(2,"数据发送成功!");
                 break;
             case BleControl.BLE_STATUS_SCAN_START:
-                dataEntities.clear();
                 addLogs(2,"开始扫描蓝牙..");
-                Log.d(TAG, "bluetoothStatus: 开始扫描蓝牙..");
+                break;
+            case BleControl.BLE_STATUS_NO_CONNECTED:
+                addLogs(2,"数据发送失败，蓝牙未连接!");
                 break;
             case BleControl.BLE_STATUS_SCAN_STOP:
-                Log.d(TAG, "bluetoothStatus: 蓝牙扫描停止。。");
                 if(bluetoothDevices.size() == 0){
-                    addLogs(2,"没有找到设备..");
+                    addLogs(2,"没有找到设备!");
                 }else {
-                    addLogs(2,"停止扫描,总共找到"+bluetoothDevices.size()+"个设备");
+                    addLogs(2,"停止扫描,总共找到"+bluetoothDevices.size()+"个设备!");
                 }
                 break;
             default:break;
         }
+    }
+
+    /**
+     * 蓝牙连接成功之后获取系统功能信息,如果马上就发送信息，则会失败，这里暂停一下子
+     */
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+    private void getSystemFunction() {
+        BleControl.getInstance().writeBuffer(HexUtil.bytesToHexString(JNIUtils.getInstance().getSystemFunction()));
     }
 
     private void addLogs(int type,String content){
@@ -217,13 +238,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 msgAdapter.setData(dataEntities);
-                rlvLog.smoothScrollBy(dataEntities.size(),500);
+                rlvLog.animate();
+                rlvLog.smoothScrollToPosition(dataEntities.size());
             }
         });
     }
 
     private void getDatas(List<BluetoothDevice> bluetoothDevicess) {
-        addLogs(2,"持续扫描中，找到了"+bluetoothDevicess.size()+"个设备..");
         bluetoothDevices.clear();
         for (BluetoothDevice bluetoothDevice: bluetoothDevicess){
             BluetoothEntity entity = new BluetoothEntity();
@@ -284,5 +305,75 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this,msg,Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+
+    private String[] LOCATION = {Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION};
+    private static final int CHECK_CODE = 0x11;
+
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+    @AfterPermissionGranted(CHECK_CODE)
+    public void checkPermissions() {
+        if(hasPermission()){
+            Log.d(TAG, "checkPermissions: aaaaaaaaaaaaaaaaaaa");
+            scanDevice();
+        }else {
+            EasyPermissions.requestPermissions(MainActivity.this,
+                    "扫描蓝牙需要定位权限",
+                    CHECK_CODE,
+                    LOCATION);
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+    private void scanDevice(){
+        if(bluetoothDevices != null && bluetoothDevices.size()>0){
+            bluetoothDevices.clear();
+            adapter.setDatas(bluetoothDevices);
+        }
+        BleControl.getInstance().scanBle(new BleControl.BleScanResultListener() {
+            @Override
+            public void onScanResult(List<BluetoothDevice> bluetoothDevices) {
+                //如果列表为空，则可能是定位权限没开
+                Log.d(TAG, "onScanResult: "+bluetoothDevices.size());
+                getDatas(bluetoothDevices);
+            }
+        });
+    }
+
+    private boolean hasPermission(){
+        return EasyPermissions.hasPermissions(MainActivity.this,LOCATION);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // Forward results to EasyPermissions
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+    @Override
+    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
+        scanDevice();
+        if(requestCode == CHECK_CODE){
+            addLogs(2,"已获得权限,开始扫描蓝牙...");
+        }
+    }
+
+    //这个方法是第二次拒绝的时候才调用了
+
+    /**
+     * 被拒绝的权限列表
+     * @param requestCode
+     * @param perms
+     */
+    @Override
+    public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
+//        Log.d(TAG, "onPermissionsDenied: "+ JSONArray.toJSONString(perms));
+        if(requestCode == CHECK_CODE){
+            addLogs(2,"拒绝打开位置权限，无法扫描蓝牙设备!");
+        }
     }
 }
