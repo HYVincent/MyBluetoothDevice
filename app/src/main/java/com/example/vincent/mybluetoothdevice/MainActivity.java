@@ -22,6 +22,7 @@ import com.example.vincent.mybluetoothdevice.bluetooth.BleControl;
 import com.example.vincent.mybluetoothdevice.bluetooth.BluetoothEntity;
 import com.example.vincent.mybluetoothdevice.utils.HexUtil;
 import com.example.vincent.mybluetoothdevice.utils.JNIUtils;
+import com.tencent.bugly.crashreport.CrashReport;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         BleControl.getInstance().initBle(MainActivity.this);
         rlv = findViewById(R.id.rlv_list);
         rlvLog = findViewById(R.id.rlv_list_data);
+//        CrashReport.testJavaCrash();
         initRecycleView();
         initRecycleViewLog();
         etInput = findViewById(R.id.et_input);
