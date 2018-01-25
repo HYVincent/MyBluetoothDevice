@@ -602,6 +602,10 @@ public class BleControl {
                 }
             },3000);
         }
+        if(scanning){
+            Log.d(TAG, "scanBle: 蓝牙扫描未结束，不能再次重复扫描..");
+            return;
+        }
         mHandler.postDelayed(new Runnable() {
             @TargetApi(Build.VERSION_CODES.LOLLIPOP)
             @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)

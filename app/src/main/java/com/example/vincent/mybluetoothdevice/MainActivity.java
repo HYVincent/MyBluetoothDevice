@@ -308,7 +308,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
 
-    private String[] LOCATION = {Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION};
+    private String[] LOCATION = {Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE};
     private static final int CHECK_CODE = 0x11;
 
 
@@ -316,7 +317,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @AfterPermissionGranted(CHECK_CODE)
     public void checkPermissions() {
         if(hasPermission()){
-            Log.d(TAG, "checkPermissions: aaaaaaaaaaaaaaaaaaa");
             scanDevice();
         }else {
             EasyPermissions.requestPermissions(MainActivity.this,
