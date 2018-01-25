@@ -231,13 +231,16 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_analysisFromBleData(JN
     if (datas[0] == 0x7f) {
         ///系统功能信息
         if (datas[3] == BLE_CMD_SYSTEM_SURPPORT_FUNCTION_REPORT) {
-            jbyte  infoByte [2];
+           /* jbyte  infoByte [2];
             infoByte[0] = datas[4];
             infoByte[1] = datas[5];
-            SystemConfigInfo info;
-
-
-
+            SystemConfigInfo info;*/
+        //    info.ChannelNumber = 1;
+        //    info.Pacemaker = 1;
+        //    info.BreathMoni =2;
+        //    info.WaveConfig = 1;
+//            memcpy(&info,infoByte,sizeof(SystemConfigInfo));
+//            printf("ffffffff");
         } else if (datas[3] == BLE_CMD_SYSTEM_CONFIG_REPORT) {
 //            [self parseSystemStatus0X85:datas];
         }

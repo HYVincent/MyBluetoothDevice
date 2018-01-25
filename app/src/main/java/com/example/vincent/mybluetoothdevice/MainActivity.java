@@ -107,8 +107,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             @Override
             public void onDatas(byte[] datas) {
                 addLogs(0,HexUtil.bytesToHexString(datas));
-                String redata = HexUtil.bytesToHexString(JNIUtils.getInstance().analysisFromBleData(datas));
-                Log.d(TAG, "onDatas: "+redata);
+//                String redata = HexUtil.bytesToHexString(JNIUtils.getInstance().analysisFromBleData(datas));
+//                Log.d(TAG, "onDatas: "+redata);
             }
         });
     }
@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 break;
             case BleControl.BLE_CONNECT_STATUS_UNBLOCKED:
                 addLogs(2,"已创建可通信交流通道，可正常发送数据!");
-                getSystemFunction();
+//                getSystemFunction();
                 break;
             case BleControl.BLE_CONNECT_STATUS_BLOCKED:
                 addLogs(2,"创建可通信交流通道失败，数据发送将会失败");
@@ -308,7 +308,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
 
-    private String[] LOCATION = {Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION};
+    private String[] LOCATION = {Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE};
     private static final int CHECK_CODE = 0x11;
 
 
@@ -316,7 +317,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @AfterPermissionGranted(CHECK_CODE)
     public void checkPermissions() {
         if(hasPermission()){
-            Log.d(TAG, "checkPermissions: aaaaaaaaaaaaaaaaaaa");
             scanDevice();
         }else {
             EasyPermissions.requestPermissions(MainActivity.this,
