@@ -108,8 +108,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             @Override
             public void onDatas(byte[] datas) {
                 addLogs(0,HexUtil.bytesToHexString(datas));
-                Log.d(TAG, "onDatas: 解析数据..");
-                Log.d(TAG, "onDatas: "+JNIUtils.getInstance().analysisFromBleData(datas));
+//                Log.d(TAG, "onDatas: 解析数据..");
+//                Log.d(TAG, "onDatas: "+JNIUtils.getInstance().analysisFromBleData(datas));
                /* if(datas[0] == 0x7f) {
                     System.out.println("-----------");
                     switch (datas[3]){
