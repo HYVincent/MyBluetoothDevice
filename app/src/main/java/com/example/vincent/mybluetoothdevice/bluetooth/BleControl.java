@@ -96,10 +96,10 @@ public class BleControl {
     public static final int BLE_STATUS_SEND_DATE_SUCCESS = 112;
     //发送数据，但是蓝牙此时未连接
     public static final int BLE_STATUS_NO_CONNECTED = 113;
-    //蓝牙连接成功之后成功创建了可通信通道
+    //蓝牙连接成功之后成功创建了可通信通道，表示可以向设备发送数据了
     public static final int BLE_CONNECT_STATUS_UNBLOCKED = 114;
-    //蓝牙连接成功之后创建了可通信通道失败 这时数据发送会失败的
-    public static final int BLE_CONNECT_STATUS_BLOCKED = 115;
+    //蓝牙连接成功之后创建了可通信通道失败 这时数据监听会失败，失败之后收不到设备数据
+    public static final int BLE_CONNECT_STATUS_ACCEPT_FAIL = 115;
     //搜索到的蓝牙地址
     private List<String > address = new ArrayList<>();
     //搜索到的蓝牙设备列表
@@ -250,7 +250,7 @@ public class BleControl {
             if(hasStatusChangeNotificationListener()){
                 statusChangeNotificationListener.onChangeStatus(BLE_STATUS_SEND_DATE_FAILE);
             }
-            Log.e(TAG, "date send faile");
+            Log.e(TAG, "date send faile 1，data = " + value);
             return;
         }
         if(mBleGatt == null || !isConnect){
@@ -267,7 +267,7 @@ public class BleControl {
             if(hasStatusChangeNotificationListener()){
                 statusChangeNotificationListener.onChangeStatus(BLE_STATUS_SEND_DATE_FAILE);
             }
-            Log.e(TAG, "date send faile 1");
+            Log.e(TAG, "date send faile 2，data = " + value);
             return;
         }
 
@@ -276,6 +276,15 @@ public class BleControl {
         //发送
         boolean b = mBleGatt.writeCharacteristic(mBleGattCharacteristic);
         Log.e(TAG, "send: " + b + " data：" + value);
+        if(b){
+            if(hasStatusChangeNotificationListener()){
+                statusChangeNotificationListener.onChangeStatus(BLE_STATUS_SEND_DATE_SUCCESS);
+            }
+        }else {
+            if(hasStatusChangeNotificationListener()){
+                statusChangeNotificationListener.onChangeStatus(BLE_STATUS_SEND_DATE_FAILE);
+            }
+        }
     }
 
 
@@ -371,13 +380,9 @@ public class BleControl {
                 }
                 //建立可通信通道
                 boolean isCreateCommunicationAisle  =  enableNotification(true,NotificationCharacteristic);
-                if(isCreateCommunicationAisle){
+                if(!isCreateCommunicationAisle){
                     if(hasStatusChangeNotificationListener()){
-                        statusChangeNotificationListener.onChangeStatus(BLE_CONNECT_STATUS_UNBLOCKED);
-                    }
-                }else {
-                    if(hasStatusChangeNotificationListener()){
-                        statusChangeNotificationListener.onChangeStatus(BLE_CONNECT_STATUS_BLOCKED);
+                        statusChangeNotificationListener.onChangeStatus(BLE_CONNECT_STATUS_ACCEPT_FAIL);
                     }
                 }
             }
@@ -415,7 +420,7 @@ public class BleControl {
             }
         }
 
-        //通知数据
+        //收到数据通知
         @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
@@ -429,13 +434,18 @@ public class BleControl {
         @Override
         public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorRead(gatt, descriptor, status);
+            //可读
             Log.d(TAG, "onDescriptorRead: ");
         }
 
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorWrite(gatt, descriptor, status);
+            //可写。。
             Log.d(TAG, "onDescriptorWrite: ");
+            if(hasStatusChangeNotificationListener()){
+                statusChangeNotificationListener.onChangeStatus(BLE_CONNECT_STATUS_UNBLOCKED);
+            }
         }
 
         @Override
@@ -614,7 +624,6 @@ public class BleControl {
                 stopBleScan(true);
             }
         }, BLE_SCAN_TIME_OUT);
-        scanning = true;
         //android 5.0 以前
         if (Build.VERSION.SDK_INT < 21){
             mBleAdapter.stopLeScan(mLeScanCallback);
@@ -623,6 +632,7 @@ public class BleControl {
                 statusChangeNotificationListener.onChangeStatus(BLE_STATUS_SCAN_START);
             }
             Log.d(TAG, "scanDevice: start scan bluetooth device ...");
+            scanning = true;
         } else {
             BluetoothLeScanner scanner = mBleAdapter.getBluetoothLeScanner();
 //            scanner.stopScan(mScanCallback);//java.lang.NullPointerException: Attempt to invoke virtual method 'void android.bluetooth.le.BluetoothLeScanner.stopScan(android.bluetooth.le.ScanCallback)' on a null object reference
@@ -632,6 +642,7 @@ public class BleControl {
                     statusChangeNotificationListener.onChangeStatus(BLE_STATUS_SCAN_START);
                 }
                 Log.d(TAG, "scanDevice: start scan bluetooth device ...");
+                scanning = true;
             }else {
                 Log.d(TAG, "scanDevice: scan ble faile,because scanner is null");
             }
@@ -644,6 +655,9 @@ public class BleControl {
      */
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void stopBleScan(boolean isAutoStop){
+        if(!scanning){
+            return;
+        }
         if(isAutoStop){
             Log.d(TAG, "stopBleScan: 自动停止..");
         }else {
@@ -654,15 +668,12 @@ public class BleControl {
         }
         if(mBleAdapter != null && scanning){
             scanning = false;
-            if(mLeScanCallback != null){
-                mBleAdapter.stopLeScan(mLeScanCallback);
-            }
-            if(mScanCallback != null && mBleAdapter.getBluetoothLeScanner() != null){
-                mBleAdapter.getBluetoothLeScanner().stopScan(mScanCallback);
-            }
+            mBleAdapter.getBluetoothLeScanner().stopScan(mScanCallback);
+            mBleAdapter.stopLeScan(mLeScanCallback);
             if(hasStatusChangeNotificationListener()){
                 statusChangeNotificationListener.onChangeStatus(BLE_STATUS_SCAN_STOP);
             }
+            Log.d(TAG, "stopBleScan:  stop scan bluetooth device ...");
         }
     }
 
@@ -670,7 +681,7 @@ public class BleControl {
 
     public void registerNotification(Activity activity){
         if(mContext != null && mReceiver != null){
-            mContext.registerReceiver(mReceiver, makeFilter());
+            activity.registerReceiver(mReceiver, makeFilter());
         }
     }
 
@@ -725,6 +736,7 @@ public class BleControl {
      */
     public void closeBle(){
         if(mBleAdapter != null){
+            scanning = false;
             mBleAdapter.disable();
             if(hasStatusChangeNotificationListener()){
                 statusChangeNotificationListener.onChangeStatus(BLE_STATUS_CLOSE);

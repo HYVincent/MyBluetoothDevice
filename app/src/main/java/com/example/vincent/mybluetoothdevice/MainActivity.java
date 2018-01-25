@@ -16,14 +16,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.example.vincent.mybluetoothdevice.bluetooth.BleControl;
 import com.example.vincent.mybluetoothdevice.bluetooth.BluetoothEntity;
+import com.example.vincent.mybluetoothdevice.utils.AnalysisDataUtils;
 import com.example.vincent.mybluetoothdevice.utils.HexUtil;
 import com.example.vincent.mybluetoothdevice.utils.JNIUtils;
-import com.tencent.bugly.crashreport.CrashReport;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,7 +51,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         BleControl.getInstance().initBle(MainActivity.this);
         rlv = findViewById(R.id.rlv_list);
         rlvLog = findViewById(R.id.rlv_list_data);
-//        CrashReport.testJavaCrash();
         initRecycleView();
         initRecycleViewLog();
         etInput = findViewById(R.id.et_input);
@@ -109,8 +108,22 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             @Override
             public void onDatas(byte[] datas) {
                 addLogs(0,HexUtil.bytesToHexString(datas));
-//                String redata = HexUtil.bytesToHexString(JNIUtils.getInstance().analysisFromBleData(datas));
-//                Log.d(TAG, "onDatas: "+redata);
+                Log.d(TAG, "onDatas: 解析数据..");
+                Log.d(TAG, "onDatas: "+JNIUtils.getInstance().analysisFromBleData(datas));
+               /* if(datas[0] == 0x7f) {
+                    System.out.println("-----------");
+                    switch (datas[3]){
+                        case (byte) 0x86:
+                            String toBinaryString = AnalysisDataUtils.analysis0x86(datas);
+                            Log.d(TAG, "onDatas: toBinaryString= " + toBinaryString);
+                            break;
+                        default:
+                            Log.d(TAG, "onDatas: default...");
+                            break;
+                    }
+                }else {
+                    Log.d(TAG, "onDatas: 该数据不是0x7f开头的数据..");
+                }*/
             }
         });
     }
@@ -137,7 +150,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             addLogs(2,"请输入指令!");
             return;
         }
-        String str = HexUtil.bytesToHexString(JNIUtils.getInstance().setSystemTime(1,1,1,1,1,1));
+//        String str = HexUtil.bytesToHexString(JNIUtils.getInstance().setSystemTime(1,1,1,1,1,1));
+        String str = HexUtil.bytesToHexString(JNIUtils.getInstance().getSystemFunction());
         BleControl.getInstance().writeBuffer(str);
         addLogs(1,str);
     }
@@ -185,9 +199,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 break;
             case BleControl.BLE_CONNECT_STATUS_UNBLOCKED:
                 addLogs(2,"已创建可通信交流通道，可正常发送数据!");
-//                getSystemFunction();
+                addLogs(2,"正在获取系统功能..");
+                getSystemFunction();
                 break;
-            case BleControl.BLE_CONNECT_STATUS_BLOCKED:
+            case BleControl.BLE_CONNECT_STATUS_ACCEPT_FAIL:
                 addLogs(2,"创建可通信交流通道失败，数据发送将会失败");
                 break;
             case BleControl.BLE_STATUS_BREAK_RECONNECTION:
@@ -300,14 +315,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         });
     }
 
-    private void toastMsg(final String msg){
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(MainActivity.this,msg,Toast.LENGTH_LONG).show();
-            }
-        });
-    }
+
+    //----------------------------------------------------以下代码为权限检查相关----------------------------------------------------------------------
 
 
     private String[] LOCATION = {Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION,

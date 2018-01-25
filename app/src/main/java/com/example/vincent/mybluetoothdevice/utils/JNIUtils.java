@@ -49,4 +49,8 @@ public class JNIUtils {
      */
     public native byte[] analysisFromBleData(byte[] datas);
 
+
+
+
+
 }

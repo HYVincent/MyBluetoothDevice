@@ -1,6 +1,8 @@
 #include <jni.h>
 #include <string>
 #include <string.h>
+#include<android/log.h>
+#include <stdlib.h>
 
 ///宏定义
 ///一次数据的长度
@@ -15,6 +17,11 @@
 #define  PAGE_SAVE_NUM     (5)
 ///没有数据时候的长度
 #define  BLE_PACKET_LEN_WITHOUT_DATA  (44)
+
+#define   LOG_TAG    "LOG_JNI"
+#define   LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
+#define   LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
+#define   LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
 ///命令字宏定义
 typedef enum{
@@ -221,26 +228,27 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_setSystemTime(JNIEnv *
  * 数据解析
  */
 extern "C"
-JNIEXPORT jbyteArray* JNICALL
-Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_analysisFromBleData(JNIEnv *env,
+JNIEXPORT jbyteArray JNICALL
+Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_analysisFromBleData(JNIEnv *env,jclass object,
                                                                               jobject instance,
-                                                                              jbyteArray datas_) {
-    jbyte *datas = env->GetByteArrayElements(datas_, NULL);
+                                                                              jcharArray  dataStr) {
+    jbyteArray mDatas;
+
+
 
     // 所有协议均以0x7f 开头
-    if (datas[0] == 0x7f) {
+   /* if (mDatas[0] == (jbyte)0x7f) {
         ///系统功能信息
-        if (datas[3] == BLE_CMD_SYSTEM_SURPPORT_FUNCTION_REPORT) {
-           /* jbyte  infoByte [2];
+        if (datas[3] == (jbyte)BLE_CMD_SYSTEM_SURPPORT_FUNCTION_REPORT) {
+           jbyte  infoByte [2];
             infoByte[0] = datas[4];
             infoByte[1] = datas[5];
-            SystemConfigInfo info;*/
+            SystemConfigInfo info;
         //    info.ChannelNumber = 1;
         //    info.Pacemaker = 1;
         //    info.BreathMoni =2;
         //    info.WaveConfig = 1;
-//            memcpy(&info,infoByte,sizeof(SystemConfigInfo));
-//            printf("ffffffff");
+            memcpy(&info,infoByte,sizeof(SystemConfigInfo));
         } else if (datas[3] == BLE_CMD_SYSTEM_CONFIG_REPORT) {
 //            [self parseSystemStatus0X85:datas];
         }
@@ -251,18 +259,18 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_analysisFromBleData(JN
 //            [self parseSystemTime0x83:datas];
         }
         else  if (datas[3] == BLE_CMD_REAL_TIME_SINGLE_ECG ||datas[3]==BLE_CMD_HISTORY_SINGLE_ECG) {
-            /*self.totalData = [NSMutableData data];
+            *//*self.totalData = [NSMutableData data];
             //命令内容长度
             int length = (int) ((datas[1] & 0xFF)| ((datas[2] & 0xFF)<<8));
 //                       KMyLog(@"数据内容长度:---%d---",length);
             self.currentWaveDataLength = length;
             self.currentWaveData = [NSMutableData data];
-            [self parseRealTimeWaveData:characteristic.value];*/
+            [self parseRealTimeWaveData:characteristic.value];*//*
         }else{
 //                  [self parseRealTimeWaveData:datas];
         }
     }else{
 //        [self parseRealTimeWaveData:characteristic.value];
-    }
-    env->ReleaseByteArrayElements(datas_, datas, 0);
+    }*/
+    return mDatas;
 }

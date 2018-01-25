@@ -4,6 +4,8 @@ package com.example.vincent.mybluetoothdevice.utils;
  */
 public class HexUtil {
 
+    private static String hexStr =  "0123456789ABCDEF";
+
     public static byte[] hexStringToBytes(String hexString) {
         if (hexString == null || hexString.equals("")) {
             return null;
@@ -39,4 +41,38 @@ public class HexUtil {
         }
         return sb.toString();
     }
+
+    /**
+     *
+     * @param hex
+     * @return 将十六进制转换为二进制字节数组   16-2
+     */
+    public static byte[] hexStr2BinArr(byte[] hex){
+        return hexStr2BinArr(bytesToHexString(hex));
+    }
+
+
+    /**
+     *
+     * @param hexString
+     * @return 将十六进制转换为二进制字节数组   16-2
+     */
+    public static byte[] hexStr2BinArr(String hexString){
+        //hexString的长度对2取整，作为bytes的长度
+        int len = hexString.length()/2;
+        byte[] bytes = new byte[len];
+        byte high = 0;//字节高四位
+        byte low = 0;//字节低四位
+        for(int i=0;i<len;i++){
+            //右移四位得到高位
+            high = (byte)((hexStr.indexOf(hexString.charAt(2*i)))<<4);
+            low = (byte)hexStr.indexOf(hexString.charAt(2*i+1));
+            bytes[i] = (byte) (high|low);//高地位做或运算
+        }
+        return bytes;
+    }
+
+
+
+
 }
