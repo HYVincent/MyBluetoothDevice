@@ -252,6 +252,10 @@ public class BleControl {
      */
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public void writeBuffer(String value) {
+        if(TextUtils.isEmpty(value)){
+            Log.d(TAG, "writeBuffer: the value is null,no send!");
+            return;
+        }
         if (!isEnable()) {
             if(hasStatusChangeNotificationListener()){
                 statusChangeNotificationListener.onChangeStatus(BLE_STATUS_SEND_DATE_FAILE);

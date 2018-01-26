@@ -88,15 +88,32 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 checkStatus(status);
             }
         });
+        findViewById(R.id.btn_clear_msg).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dataEntities.clear();
+                msgAdapter.setData(dataEntities);
+            }
+        });
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 //                String tag =  HexUtil.bytesToHexString(JNIUtils.getInstance().setSystemTime0x13(1,1,1,1,1,1));
 //                Log.d(TAG, "Test: "+tag);
-                sendData(etInput.getText().toString());
-//                String tag0x17 = HexUtil.bytesToHexString(JNIUtils.getInstance().sendSetSystemStatusWithInfo0x17(1,2));
-//                Log.d(TAG, "onClick: 0x17:"+tag0x17);
-//                addLogs(1,tag0x17);
+//                sendData(etInput.getText().toString());
+               /* String tag0x17 = HexUtil.bytesToHexString(JNIUtils.getInstance().
+                        sendSetSystemStatusWithInfo0x17(0,0,0,0));
+                Log.d(TAG, "onClick: 0x17:"+tag0x17);
+                sendData(tag0x17);*/
+
+              /*  String tag0x15 = HexUtil.bytesToHexString(JNIUtils.getInstance().sendAlertSwitch0x15WithInfo0x15(0,0,0,0));
+                Log.d(TAG, "onClick: 0x15:"+tag0x15);
+                sendData(tag0x15);*/
+
+                String tag0x13 = HexUtil.bytesToHexString(JNIUtils.getInstance().sendSystemTime0x13(18,1,26,17,17,40));
+                Log.d(TAG, "onClick: 0x15:"+tag0x13);
+                sendData(tag0x13);
+
                 /*byte[] datas = new byte[8];
                 datas[0] = 0x7f;
                 datas[1] = 0x02;

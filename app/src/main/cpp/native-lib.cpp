@@ -179,55 +179,6 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_getSystemFunction(JNIE
     return jarray;
 }
 
-/**
- * 调用此方法设置时间
- * @param env
- * @param year  年
- * @param month  月
- * @param day 日
- * @param hour 时
- * @param min 分
- * @param sec 秒
- * @return
- */
-extern "C"
-JNIEXPORT jbyteArray JNICALL
-Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_setSystemTime0x13(JNIEnv *env,
-                                                                        jobject instance, jint year,
-                                                                        jint month, jint day,
-                                                                        jint hour, jint min,
-                                                                        jint sec) {
-    jbyte  frameBeforeBase64 [10];
-    ///命令头
-    frameBeforeBase64[0] = BLE_PACKET_HEAD;
-    ///命令内容长度 两个字节
-    frameBeforeBase64[1] = 0x04;
-    frameBeforeBase64[2] = 0x0;
-    ///命令字
-    frameBeforeBase64[3] =  BLE_CMD_SET_SYSTEM_TIME;
-
-    SystemTimeInfo timeInfo;
-    timeInfo.Year = year;
-    timeInfo.Month = month;
-    timeInfo.Day = day;
-    timeInfo.Hour = hour;
-    timeInfo.Min = min;
-    timeInfo.Sec = sec;
-
-    frameBeforeBase64[4] =  *((uint8_t *)(&timeInfo));
-    frameBeforeBase64[5] =  *((uint8_t *)(&timeInfo)+1);
-    frameBeforeBase64[6] = *((uint8_t *)(&timeInfo)+2);
-    frameBeforeBase64[7] = *((uint8_t *)(&timeInfo)+3);
-    ///校验和
-    uint8_t sum = frameBeforeBase64[3]+frameBeforeBase64[4]+frameBeforeBase64[5]+frameBeforeBase64[6]+frameBeforeBase64[7];
-    frameBeforeBase64[8] = (jbyte) ((sum) & 0xFF);
-    frameBeforeBase64[9] = 0xF7;
-    jbyteArray jarray = env->NewByteArray(sizeof(frameBeforeBase64));
-    (env)->SetByteArrayRegion
-            (jarray, 0, sizeof(frameBeforeBase64), frameBeforeBase64);
-    return jarray;
-}
-
 extern "C"
 JNIEXPORT char* JNICALL ConvertJByteaArrayToChars(JNIEnv *env, jbyteArray bytearray)
 {
@@ -315,7 +266,7 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_analysisFromBleData0x8
 extern "C"
 JNIEXPORT jbyteArray JNICALL
 Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_sendSetSystemStatusWithInfo0x17(
-        JNIEnv *env, jobject instance, jint v1, jint v2) {
+        JNIEnv *env, jobject instance,jint BreathMoni,jint ChannelNumber,jint Pacemaker, jint WaveConfig) {
 
     jbyte  frameBeforeBase64 [8];
     ///命令头
@@ -332,16 +283,14 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_sendSetSystemStatusWit
 //     frameBeforeBase64[4]  =  (Byte) (value & 0xFF);
 //     frameBeforeBase64[5] =  (Byte) ((value>>8) & 0xFF);
 
-    SystemConfigInfo *info;
-    info->BreathMoni = 0;
-    info->ChannelNumber =0;
-    info->Pacemaker = 1;
-    info->WaveConfig = 1;
+    SystemConfigInfo info;
+    info.BreathMoni = (uint32_t )BreathMoni;
+    info.ChannelNumber =(uint32_t )ChannelNumber;
+    info.Pacemaker = (uint32_t )Pacemaker;
+    info.WaveConfig = (uint32_t )WaveConfig;
 
-    frameBeforeBase64[4]  =(jbyte) *((uint8_t *)(info));
-    frameBeforeBase64[5] = (jbyte) *((uint8_t *)(info+1));
-//    frameBeforeBase64[4]  =(jbyte) (info);
-//    frameBeforeBase64[5] = (jbyte) (info+1);
+    frameBeforeBase64[4]  =  *((uint8_t *)(&info));
+    frameBeforeBase64[5] =  *((uint8_t *)(&info)+1);
     ///校验和
     uint8_t sum = frameBeforeBase64[3]+frameBeforeBase64[4]+frameBeforeBase64[5];
     ///校验和
@@ -353,3 +302,166 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_sendSetSystemStatusWit
     return jarray;
 
 }
+
+/**
+ * 设置报警开关0x15
+ */
+extern "C"
+JNIEXPORT jbyteArray JNICALL
+Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_sendAlertSwitch0x15WithInfo0x15(
+        JNIEnv *env, jobject instance, jint LowPowerAlert, jint FlashAlert, jint LeadAlert,
+        jint BloothStatusAlert) {
+
+    jbyte  frameBeforeBase64 [8];
+    ///命令头
+    frameBeforeBase64[0] = BLE_PACKET_HEAD;
+    ///命令内容长度 两个字节
+    frameBeforeBase64[1] = 0x02;
+    frameBeforeBase64[2] = 0x0;
+    ///命令字
+    frameBeforeBase64[3] =  BLE_CMD_SET_ALARM_ENABLE;
+    /*
+    NSString *content = [self toDecimalSystemWithBinarySystem:bitStr];
+    int value = [content intValue];
+    ///低位在前 高位在后
+    frameBeforeBase64[4]  =  (Byte) (value & 0xFF);
+    frameBeforeBase64[5] =  (Byte) ((value>>8) & 0xFF);
+    */
+//    SystemAlertInfo alertInfo;
+
+    SystemAlertInfo info;
+    info.BloothStatusAlert = BloothStatusAlert;
+    info.FlashAlert = FlashAlert;
+    info.LeadAlert = LeadAlert;
+    info.LowPowerAlert = LowPowerAlert;
+
+    frameBeforeBase64[4]  =  *((uint8_t *)(&info));
+    frameBeforeBase64[5] =  *((uint8_t *)(&info)+1);
+    ///校验和
+    uint8_t sum = frameBeforeBase64[3]+frameBeforeBase64[4]+frameBeforeBase64[5];
+
+    frameBeforeBase64[6] = (jbyte) (sum & 0xFF);
+    frameBeforeBase64[7] = 0xF7;
+    jbyteArray jarray = env->NewByteArray(sizeof(frameBeforeBase64));
+    (env)->SetByteArrayRegion
+            (jarray, 0, sizeof(frameBeforeBase64), frameBeforeBase64);
+    return jarray;
+}
+/**
+ * 调用此方法设置时间
+ * @param env
+ * @param year  年
+ * @param month  月
+ * @param day 日
+ * @param hour 时
+ * @param min 分
+ * @param sec 秒
+ * @return
+ */
+extern "C"
+JNIEXPORT jbyteArray JNICALL
+Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_sendSystemTime0x13(JNIEnv *env,
+                                                                             jobject instance,
+                                                                             jint year, jint month,
+                                                                             jint day, jint hour,
+                                                                             jint min, jint sec) {
+
+    jbyte  frameBeforeBase64 [10];
+    ///命令头
+    frameBeforeBase64[0] = BLE_PACKET_HEAD;
+    ///命令内容长度 两个字节
+    frameBeforeBase64[1] = 0x04;
+    frameBeforeBase64[2] = 0x0;
+    ///命令字
+    frameBeforeBase64[3] =  BLE_CMD_SET_SYSTEM_TIME;
+
+    SystemTimeInfo timeInfo;
+    timeInfo.Year = year;
+    timeInfo.Month = month;
+    timeInfo.Day = day;
+    timeInfo.Hour = hour;
+    timeInfo.Min = min;
+    timeInfo.Sec = sec;
+
+    frameBeforeBase64[4] =  *((uint8_t *)(&timeInfo));
+    frameBeforeBase64[5] =  *((uint8_t *)(&timeInfo)+1);
+    frameBeforeBase64[6] = *((uint8_t *)(&timeInfo)+2);
+    frameBeforeBase64[7] = *((uint8_t *)(&timeInfo)+3);
+    ///校验和
+    uint8_t sum = frameBeforeBase64[3]+frameBeforeBase64[4]+frameBeforeBase64[5]+frameBeforeBase64[6]+frameBeforeBase64[7];
+    frameBeforeBase64[8] = (jbyte) ((sum) & 0xFF);
+    frameBeforeBase64[9] = 0xF7;
+    jbyteArray jarray = env->NewByteArray(sizeof(frameBeforeBase64));
+    (env)->SetByteArrayRegion
+            (jarray, 0, sizeof(frameBeforeBase64), frameBeforeBase64);
+    return jarray;
+}
+
+/**
+ * 解析数据0x83
+ */
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_parseSystemTime0x83(JNIEnv *env,
+                                                                              jobject instance,
+                                                                              jbyteArray datas_,
+                                                                              jobject infoxx) {
+    jbyte *datas = env->GetByteArrayElements(datas_, NULL);
+    jbyte mContent[4];
+    mContent[0] = datas[4];
+    mContent[1] = datas[5];
+    mContent[2] = datas[6];
+    mContent[3] = datas[7];
+    SystemTimeInfo info;
+    //把jbyte转为结构体
+    memcpy(&info,mContent,sizeof(SystemConfigInfo));
+    env->ReleaseByteArrayElements(datas_, datas, 0);
+
+//    char str[4];
+//    str[0] = info.WaveConfig;
+//    str[1] = info.Pacemaker;
+//    str[2] = info.ChannelNumber;
+//    str[3] = info.BreathMoni;
+
+    jclass clazz;
+    jfieldID fid;
+
+    // mapping bar of C to foo
+//    clazz = (env)->GetObjectClass(env, systemConfigInfo);
+    clazz = (env)->GetObjectClass(infoxx);
+    if (0 == clazz) {
+//        LOGD("GetObjectClass returned");
+        LOGD("获取对象失败");
+    } else{
+        //Java 类型     符号
+//        boolean    Z
+//        byte    B
+//        char    C
+//        short    S
+//        int    I
+//        long    L
+//        float    F
+//        double    D
+//        void    V
+        //设置属性
+        fid = (env)->GetFieldID(clazz, "Year", "I");
+        (env)->SetIntField(infoxx,fid,info.Year);
+
+        fid = (env)->GetFieldID(clazz,"Month","I");
+        env->SetIntField(infoxx,fid,info.Month);
+
+        fid = (env)->GetFieldID(clazz,"Day","I");
+        env->SetIntField(infoxx,fid,info.Day);
+
+        fid = (env)->GetFieldID(clazz,"Min","I");
+        env->SetIntField(infoxx,fid,info.Min);
+
+        fid = (env)->GetFieldID(clazz,"Hour","I");
+        env->SetIntField(infoxx,fid,info.Hour);
+
+        fid = (env)->GetFieldID(clazz,"Sec","I");
+        env->SetIntField(infoxx,fid,info.Sec);
+    }
+
+}
+

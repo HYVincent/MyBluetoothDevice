@@ -2,7 +2,9 @@ package com.example.vincent.mybluetoothdevice.utils;
 
 import android.util.Log;
 
+import com.alibaba.fastjson.JSON;
 import com.example.vincent.mybluetoothdevice.entity.SystemConfigInfo;
+import com.example.vincent.mybluetoothdevice.entity.SystemTimeInfo;
 
 /**
  * @author Vincent QQ:1032006226
@@ -67,7 +69,7 @@ public class JNIUtils {
      * @param sec 秒
      * @return
      */
-    public native byte[] setSystemTime0x13(int year, int month, int day, int hour, int min, int sec);
+    public native byte[] sendSystemTime0x13(int year, int month, int day, int hour, int min, int sec);
 
 
     /**
@@ -90,7 +92,9 @@ public class JNIUtils {
 //            [self parseAlertStatus0X84:datas];
             } else if (datas[3] == (byte)BLE_CMD_SYSTEM_TIME_REPORT) {
                 //0x83
-//            [self parseSystemTime0x83:datas];
+                SystemTimeInfo info = new SystemTimeInfo();
+                parseSystemTime0x83(datas,info);
+                Log.d(TAG, "judgeDataType: "+ JSON.toJSONString(info));
             } else  if (datas[3] == (byte)BLE_CMD_REAL_TIME_SINGLE_ECG ||datas[3]==(byte) BLE_CMD_HISTORY_SINGLE_ECG) {
                 //0x80或者0x81
             /*self.totalData = [NSMutableData data];
@@ -112,6 +116,13 @@ public class JNIUtils {
     }
 
     /**
+     * 解析数据类型0x83
+     * @param datas
+     * @param info
+     */
+    private native void parseSystemTime0x83(byte[] datas, SystemTimeInfo info);
+
+    /**
      * 解析数据0x86类型
      * @param datas
      * @param info
@@ -122,6 +133,12 @@ public class JNIUtils {
      * 设置系统配置状态0x17
      * @return
      */
-    public native byte[] sendSetSystemStatusWithInfo0x17(int v1,int v2);
+    public native byte[] sendSetSystemStatusWithInfo0x17(int BreathMoni,int ChannelNumber,int Pacemaker, int WaveConfig);
+
+    /**
+     *  设置报警开关0x15
+     * @return
+     */
+    public native byte[] sendAlertSwitch0x15WithInfo0x15(int LowPowerAlert,int FlashAlert,int LeadAlert,int BloothStatusAlert);
 
 }

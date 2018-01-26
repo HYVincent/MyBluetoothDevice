@@ -11,11 +11,17 @@ package com.example.vincent.mybluetoothdevice.entity;
 
 public class SystemTimeInfo {
 
+    //当前年-2000
     private int Year;
+    //1-12
     private int Month;
+    //1-31
     private int Day;
+    //0-23
     private int Hour;
+    //0-59
     private int Min;
+    //0-59
     private int Sec;
 
     public int getYear() {
