@@ -97,11 +97,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                String tag =  HexUtil.bytesToHexString(JNIUtils.getInstance().setSystemTime(1,1,1,1,1,1));
-//                Log.d(TAG, "Test: "+tag);
-//                sendData(etInput.getText().toString());
+                String tag =  HexUtil.bytesToHexString(JNIUtils.getInstance().setSystemTime(1,1,1,1,1,1));
+                Log.d(TAG, "Test: "+tag);
+                sendData(etInput.getText().toString());
 
-                byte[] datas = new byte[8];
+                /*byte[] datas = new byte[8];
                 datas[0] = 0x7f;
                 datas[1] = 0x02;
                 datas[2] = 0x00;
@@ -111,15 +111,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 datas[6] = (byte) 0x86;
                 datas[7] = (byte) 0xf7;
                 Log.d(TAG, "onDatas: 解析数据-->"+HexUtil.bytesToHexString(datas)+" "+datas.length);
-                JNIUtils.getInstance().test(datas,8);
+                JNIUtils.getInstance().test(datas,8);*/
             }
         });
         BleControl.getInstance().setDataChangeNotificationListener(new BleControl.BleDataChangeNotificationListener() {
             @Override
             public void onDatas(byte[] datas) {
                 addLogs(0,HexUtil.bytesToHexString(datas));
-//                Log.d(TAG, "onDatas: 解析数据-->"+HexUtil.bytesToHexString(datas));
-//                Log.d(TAG, "onDatas: "+JNIUtils.getInstance().analysisFromBleData(datas));
+                Log.d(TAG, "onDatas: 解析数据-->"+HexUtil.bytesToHexString(datas));
+                JNIUtils.getInstance().judgeDataType(datas);
                /* if(datas[0] == 0x7f) {
                     System.out.println("-----------");
                     switch (datas[3]){
