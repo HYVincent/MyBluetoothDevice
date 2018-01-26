@@ -2,6 +2,8 @@ package com.example.vincent.mybluetoothdevice.utils;
 
 import android.util.Log;
 
+import com.example.vincent.mybluetoothdevice.entity.SystemConfigInfo;
+
 /**
  * @author Vincent QQ:1032006226
  * @version v1.0
@@ -77,7 +79,9 @@ public class JNIUtils {
         if (datas[0] == (byte) 0x7f) {
             ///系统功能信息 0x86
             if (datas[3] == (byte)BLE_CMD_SYSTEM_SURPPORT_FUNCTION_REPORT) {
-               analysisFromBleData0x86(datas);
+                SystemConfigInfo info = new SystemConfigInfo();
+                analysisFromBleData0x86(datas,info);
+                Log.d(TAG, "judgeDataType: "+info.getChannelNumber());
             } else if (datas[3] == (byte)BLE_CMD_SYSTEM_CONFIG_REPORT) {
                 //0x85
 //            [self parseSystemStatus0X85:datas];
@@ -108,6 +112,6 @@ public class JNIUtils {
     }
 
 
-    public native void analysisFromBleData0x86(byte[] datas);
+    public native void analysisFromBleData0x86(byte[] datas, SystemConfigInfo info);
 
 }

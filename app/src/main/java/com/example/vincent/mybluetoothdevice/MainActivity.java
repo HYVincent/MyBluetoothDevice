@@ -250,6 +250,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      */
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void getSystemFunction() {
+        addLogs(1,HexUtil.bytesToHexString(JNIUtils.getInstance().getSystemFunction()));
         BleControl.getInstance().writeBuffer(HexUtil.bytesToHexString(JNIUtils.getInstance().getSystemFunction()));
     }
 

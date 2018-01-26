@@ -253,8 +253,9 @@ JNIEXPORT char* JNICALL ConvertJByteaArrayToChars(JNIEnv *env, jbyteArray bytear
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_analysisFromBleData0x86(JNIEnv *env,
-                                                                                  jobject instance,
-                                                                                  jbyteArray datas_) {
+                                                                                  jclass thiz,
+                                                                                  jbyteArray datas_,
+                                                                                  jobject systemConfigInfo) {
     jbyte *datas = env->GetByteArrayElements(datas_, NULL);
     jbyte mContent[2];
     mContent[0] = datas[4];
@@ -265,10 +266,45 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_analysisFromBleData0x8
     memcpy(&info,mContent,sizeof(SystemConfigInfo));
     env->ReleaseByteArrayElements(datas_, datas, 0);
 
-    char str[4];
-    str[0] = info.WaveConfig;
-    str[1] = info.Pacemaker;
-    str[2] = info.ChannelNumber;
-    str[3] = info.BreathMoni;
+//    char str[4];
+//    str[0] = info.WaveConfig;
+//    str[1] = info.Pacemaker;
+//    str[2] = info.ChannelNumber;
+//    str[3] = info.BreathMoni;
+
+    jclass clazz;
+    jfieldID fid;
+
+    // mapping bar of C to foo
+//    clazz = (env)->GetObjectClass(env, systemConfigInfo);
+    clazz = (env)->GetObjectClass(systemConfigInfo);
+    if (0 == clazz) {
+//        LOGD("GetObjectClass returned");
+        LOGD("获取对象失败");
+    } else{
+        //Java 类型     符号
+//        boolean    Z
+//        byte    B
+//        char    C
+//        short    S
+//        int    I
+//        long    L
+//        float    F
+//        double    D
+//        void    V
+        //设置属性
+        fid = (env)->GetFieldID(clazz, "ChannelNumber", "I");
+        (env)->SetIntField(systemConfigInfo,fid,info.ChannelNumber);
+
+        fid = (env)->GetFieldID(clazz,"Pacemaker","I");
+        env->SetIntField(systemConfigInfo,fid,info.Pacemaker);
+
+        fid = (env)->GetFieldID(clazz,"BreathMoni","I");
+        env->SetIntField(systemConfigInfo,fid,info.BreathMoni);
+
+        fid = (env)->GetFieldID(clazz,"WaveConfig","I");
+        env->SetIntField(systemConfigInfo,fid,info.WaveConfig);
+
+    }
 
 }
