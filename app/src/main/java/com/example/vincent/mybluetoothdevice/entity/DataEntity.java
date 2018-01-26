@@ -1,4 +1,4 @@
-package com.example.vincent.mybluetoothdevice;
+package com.example.vincent.mybluetoothdevice.entity;
 
 /**
  * @author Vincent QQ:1032006226

@@ -1,4 +1,4 @@
-package com.example.vincent.mybluetoothdevice;
+package com.example.vincent.mybluetoothdevice.activity;
 
 import android.Manifest;
 import android.annotation.TargetApi;
@@ -18,8 +18,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.example.vincent.mybluetoothdevice.R;
 import com.example.vincent.mybluetoothdevice.bluetooth.BleControl;
 import com.example.vincent.mybluetoothdevice.bluetooth.BluetoothEntity;
+import com.example.vincent.mybluetoothdevice.entity.DataEntity;
 import com.example.vincent.mybluetoothdevice.utils.HexUtil;
 import com.example.vincent.mybluetoothdevice.utils.JNIUtils;
 
@@ -89,10 +91,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String tag =  HexUtil.bytesToHexString(JNIUtils.getInstance().setSystemTime(1,1,1,1,1,1));
-                Log.d(TAG, "Test: "+tag);
+//                String tag =  HexUtil.bytesToHexString(JNIUtils.getInstance().setSystemTime0x13(1,1,1,1,1,1));
+//                Log.d(TAG, "Test: "+tag);
                 sendData(etInput.getText().toString());
-
+//                String tag0x17 = HexUtil.bytesToHexString(JNIUtils.getInstance().sendSetSystemStatusWithInfo0x17(1,2));
+//                Log.d(TAG, "onClick: 0x17:"+tag0x17);
+//                addLogs(1,tag0x17);
                 /*byte[] datas = new byte[8];
                 datas[0] = 0x7f;
                 datas[1] = 0x02;
@@ -254,6 +258,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         BleControl.getInstance().writeBuffer(HexUtil.bytesToHexString(JNIUtils.getInstance().getSystemFunction()));
     }
 
+    /**
+     * 添加信息提示
+     * @param type 0 收 1 发 3  状态
+     * @param content
+     */
     private void addLogs(int type,String content){
         DataEntity dataEntity = new DataEntity();
 //                dataEntity.setMsg(StringUtils.byteToString(datas));

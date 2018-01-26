@@ -1,4 +1,4 @@
-package com.example.vincent.mybluetoothdevice;
+package com.example.vincent.mybluetoothdevice.base;
 
 import android.app.Application;
 

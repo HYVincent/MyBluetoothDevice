@@ -25,8 +25,8 @@ import android.support.annotation.RequiresApi;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.example.vincent.mybluetoothdevice.App;
-import com.example.vincent.mybluetoothdevice.Config;
+import com.example.vincent.mybluetoothdevice.base.App;
+import com.example.vincent.mybluetoothdevice.config.Config;
 import com.example.vincent.mybluetoothdevice.utils.HexUtil;
 import com.example.vincent.mybluetoothdevice.utils.StringUtils;
 

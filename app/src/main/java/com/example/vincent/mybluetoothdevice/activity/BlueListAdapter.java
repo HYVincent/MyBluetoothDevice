@@ -1,4 +1,4 @@
-package com.example.vincent.mybluetoothdevice;
+package com.example.vincent.mybluetoothdevice.activity;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.vincent.mybluetoothdevice.R;
 import com.example.vincent.mybluetoothdevice.bluetooth.BleControl;
 import com.example.vincent.mybluetoothdevice.bluetooth.BluetoothEntity;
 

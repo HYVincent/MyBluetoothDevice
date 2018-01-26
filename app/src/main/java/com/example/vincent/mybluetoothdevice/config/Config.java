@@ -1,4 +1,4 @@
-package com.example.vincent.mybluetoothdevice;
+package com.example.vincent.mybluetoothdevice.config;
 
 /**
  * @author Administrator QQ:1032006226

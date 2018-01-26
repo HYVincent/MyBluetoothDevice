@@ -67,7 +67,7 @@ public class JNIUtils {
      * @param sec 秒
      * @return
      */
-    public native byte[] setSystemTime(int year, int month, int day, int hour, int min, int sec);
+    public native byte[] setSystemTime0x13(int year, int month, int day, int hour, int min, int sec);
 
 
     /**
@@ -111,7 +111,17 @@ public class JNIUtils {
 
     }
 
-
+    /**
+     * 解析数据0x86类型
+     * @param datas
+     * @param info
+     */
     public native void analysisFromBleData0x86(byte[] datas, SystemConfigInfo info);
+
+    /**
+     * 设置系统配置状态0x17
+     * @return
+     */
+    public native byte[] sendSetSystemStatusWithInfo0x17(int v1,int v2);
 
 }

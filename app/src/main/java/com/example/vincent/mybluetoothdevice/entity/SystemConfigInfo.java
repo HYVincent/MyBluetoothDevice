@@ -5,7 +5,7 @@ package com.example.vincent.mybluetoothdevice.entity;
  * @version v1.0
  * @name MyBluetoothDevice
  * @page com.example.vincent.mybluetoothdevice.entity
- * @class describe
+ * @class describe 系统配置
  * @date 2018/1/26 13:45
  */
 

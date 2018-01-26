@@ -1,4 +1,4 @@
-package com.example.vincent.mybluetoothdevice;
+package com.example.vincent.mybluetoothdevice.activity;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -6,6 +6,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
 
+import com.example.vincent.mybluetoothdevice.base.App;
+import com.example.vincent.mybluetoothdevice.bluetooth.BleControl;
+import com.example.vincent.mybluetoothdevice.config.Config;
+import com.example.vincent.mybluetoothdevice.R;
 import com.example.vincent.mybluetoothdevice.dialog.InputContentDialog;
 
 /**
@@ -26,29 +30,46 @@ public class SettingActivity extends AppCompatActivity {
         findViewById(R.id.btn_default).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                App.getSpUtil().putString(Config.SERVICE_UUID,"");
-                App.getSpUtil().putString(Config.SERVICE_UUID,"");
-                App.getSpUtil().putString(Config.SERVICE_UUID,"");
-                App.getSpUtil().putString(Config.SERVICE_UUID,"");
-                toast("清除成功");
+                if(BleControl.getInstance().isConnect()){
+                    toast("恢复默认之前先断开设备");
+                }else {
+                    App.getSpUtil().putString(Config.SERVICE_UUID,"");
+                    App.getSpUtil().putString(Config.SERVICE_UUID,"");
+                    App.getSpUtil().putString(Config.SERVICE_UUID,"");
+                    App.getSpUtil().putString(Config.SERVICE_UUID,"");
+                    toast("清除成功");
+                }
             }
         });
         findViewById(R.id.btn_service_uuid).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setServiceUUID();
+                if(BleControl.getInstance().isConnect()){
+                    toast("设置之前先断开设备");
+                }else {
+                    setServiceUUID();
+                }
+
             }
         });
         findViewById(R.id.btn_notify_uuid).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setNotifyUUID();
+                if(BleControl.getInstance().isConnect()){
+                    toast("设置之前先断开设备");
+                }else {
+                    setNotifyUUID();
+                }
             }
         });
         findViewById(R.id.btn_write_uuid).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setWriteUUID();
+                if(BleControl.getInstance().isConnect()){
+                    toast("设置之前先断开设备");
+                }else {
+                    setWriteUUID();
+                }
             }
         });
     }

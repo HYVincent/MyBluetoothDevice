@@ -1,4 +1,4 @@
-package com.example.vincent.mybluetoothdevice;
+package com.example.vincent.mybluetoothdevice.activity;
 
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
@@ -8,6 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.vincent.mybluetoothdevice.R;
+import com.example.vincent.mybluetoothdevice.entity.DataEntity;
 import com.example.vincent.mybluetoothdevice.utils.DateUtils;
 
 import java.util.List;

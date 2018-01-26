@@ -179,7 +179,6 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_getSystemFunction(JNIE
     return jarray;
 }
 
-
 /**
  * 调用此方法设置时间
  * @param env
@@ -193,7 +192,7 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_getSystemFunction(JNIE
  */
 extern "C"
 JNIEXPORT jbyteArray JNICALL
-Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_setSystemTime(JNIEnv *env,
+Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_setSystemTime0x13(JNIEnv *env,
                                                                         jobject instance, jint year,
                                                                         jint month, jint day,
                                                                         jint hour, jint min,
@@ -306,5 +305,51 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_analysisFromBleData0x8
         env->SetIntField(systemConfigInfo,fid,info.WaveConfig);
 
     }
+
+}
+
+
+/**
+ * 设置系统配置状态0x17
+ */
+extern "C"
+JNIEXPORT jbyteArray JNICALL
+Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_sendSetSystemStatusWithInfo0x17(
+        JNIEnv *env, jobject instance, jint v1, jint v2) {
+
+    jbyte  frameBeforeBase64 [8];
+    ///命令头
+    frameBeforeBase64[0] = BLE_PACKET_HEAD;
+    ///命令内容长度 两个字节
+    frameBeforeBase64[1] = 0x02;
+    frameBeforeBase64[2] = 0x0;
+    ///命令字
+    frameBeforeBase64[3] =  BLE_CMD_SET_SYSTEM_CONFIG;
+    ///命令内容 2个
+//    NSString *content = [self toDecimalSystemWithBinarySystem:@"10000001"];
+//    int value = [content intValue];
+//    ///低位在前 高位在后
+//     frameBeforeBase64[4]  =  (Byte) (value & 0xFF);
+//     frameBeforeBase64[5] =  (Byte) ((value>>8) & 0xFF);
+
+    SystemConfigInfo *info;
+    info->BreathMoni = 0;
+    info->ChannelNumber =0;
+    info->Pacemaker = 1;
+    info->WaveConfig = 1;
+
+    frameBeforeBase64[4]  =(jbyte) *((uint8_t *)(info));
+    frameBeforeBase64[5] = (jbyte) *((uint8_t *)(info+1));
+//    frameBeforeBase64[4]  =(jbyte) (info);
+//    frameBeforeBase64[5] = (jbyte) (info+1);
+    ///校验和
+    uint8_t sum = frameBeforeBase64[3]+frameBeforeBase64[4]+frameBeforeBase64[5];
+    ///校验和
+    frameBeforeBase64[6] = (jbyte) (sum & 0xFF);
+    frameBeforeBase64[7] = 0xF7;
+    jbyteArray jarray = env->NewByteArray(sizeof(frameBeforeBase64));
+    (env)->SetByteArrayRegion
+            (jarray, 0, sizeof(frameBeforeBase64), frameBeforeBase64);
+    return jarray;
 
 }
