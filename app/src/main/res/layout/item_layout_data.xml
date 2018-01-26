@@ -12,7 +12,6 @@
         android:layout_marginLeft="10dp"
         android:layout_marginBottom="5dp"
         android:layout_marginTop="5dp"
-        android:layout_centerVertical="true"
         android:id="@+id/data_tv_type"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
@@ -29,9 +28,10 @@
 
     <TextView
         android:textSize="12sp"
+        android:layout_alignTop="@id/data_tv_type"
         android:layout_toLeftOf="@id/data_tv_time"
         android:layout_toRightOf="@id/data_tv_type"
-        android:layout_centerVertical="true"
+        android:layout_marginRight="5dp"
         android:id="@+id/data_tv_conent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />

@@ -25,6 +25,8 @@ import android.support.annotation.RequiresApi;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.example.vincent.mybluetoothdevice.App;
+import com.example.vincent.mybluetoothdevice.Config;
 import com.example.vincent.mybluetoothdevice.utils.HexUtil;
 import com.example.vincent.mybluetoothdevice.utils.StringUtils;
 
@@ -81,6 +83,8 @@ public class BleControl {
     public static final int BLE_STATUS_SCAN_BREAK = 105;
     //蓝牙状态，开始连接设备
     public static final int BLE_STATUS_SCAN_CONNECTING = 106;
+    //找不到service uuid
+    public static final int BLE_STATUS_CONNECT_NO_FOUND_SERVICE_UUID = 116;
     //蓝牙状态，连接失败
     public static final int BLE_STATUS_CONNECT_FAILE = 107;
     //蓝牙状态，连接超时
@@ -124,6 +128,9 @@ public class BleControl {
      */
     private static final String UUID_WRITER = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 
+    public boolean isConnect() {
+        return isConnect;
+    }
 
     /**
      * 初始化蓝牙
@@ -219,7 +226,7 @@ public class BleControl {
      * 断开连接
      */
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
-    private void disConnection() {
+    public void disConnection() {
         if (null == mBleAdapter || null == mBleGatt) {
             Log.e(TAG, "disconnection error maybe no init");
             return;
@@ -259,7 +266,7 @@ public class BleControl {
             return;
         }
         if (mBleGattCharacteristic == null) {
-            mBleGattCharacteristic = getBluetoothGattCharacteristic(SERVICE_UUID, UUID_WRITER);
+            mBleGattCharacteristic = getBluetoothGattCharacteristic(getServiceUUID(), getWriteUUID());
         }
 
         if (null == mBleGattCharacteristic) {
@@ -286,6 +293,31 @@ public class BleControl {
         }
     }
 
+    /**
+     * 获取写数据的UUID
+     * @return
+     */
+    private String getWriteUUID() {
+        String writeUUID = App.getSpUtil().getString(UUID_WRITER,"");
+        if(TextUtils.isEmpty(writeUUID)){
+            writeUUID = UUID_WRITER;
+        }
+        Log.d(TAG, "getWriteUUID: UUID_WRITER= "+writeUUID);
+        return writeUUID;
+    }
+
+    /**
+     * 获取设备ServiceUUID
+     * @return
+     */
+    private String getServiceUUID() {
+        String uuid = App.getSpUtil().getString(Config.SERVICE_UUID,"");
+        if(TextUtils.isEmpty(uuid)){
+            uuid = SERVICE_UUID;
+        }
+        Log.d(TAG, "getServiceUUID: service uuid --->"+uuid);
+        return uuid;
+    }
 
 
     private BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
@@ -373,7 +405,7 @@ public class BleControl {
                     }
                     servicesMap.put(serviceUuid, charMap);
                 }
-                BluetoothGattCharacteristic NotificationCharacteristic=getBluetoothGattCharacteristic(SERVICE_UUID,UUID_NOTIFY);
+                BluetoothGattCharacteristic NotificationCharacteristic=getBluetoothGattCharacteristic(getServiceUUID(),getNotifyUUID());
                 if (NotificationCharacteristic==null) {
                     return;
                 }
@@ -466,7 +498,18 @@ public class BleControl {
         }
     };
 
-
+    /**
+     * 获取读数据UUID
+     * @return
+     */
+    private String getNotifyUUID() {
+        String notifyUUID = App.getSpUtil().getString(Config.UUID_NOTIFY,"");
+        if(TextUtils.isEmpty(notifyUUID)){
+            notifyUUID = UUID_NOTIFY;
+        }
+        Log.d(TAG, "getNotifyUUID: NOTIFY_UUID = "+notifyUUID);
+        return notifyUUID;
+    }
 
 
     /**
@@ -520,6 +563,9 @@ public class BleControl {
         Map<String, BluetoothGattCharacteristic> bluetoothGattCharacteristicMap = servicesMap.get(serviceUUID);
         if (null == bluetoothGattCharacteristicMap) {
             Log.e(TAG, "Not found the serviceUUID!");
+            if(hasStatusChangeNotificationListener()){
+                statusChangeNotificationListener.onChangeStatus(BLE_STATUS_CONNECT_NO_FOUND_SERVICE_UUID);
+            }
             return null;
         }
 
@@ -784,6 +830,7 @@ public class BleControl {
         }
         return instance;
     }
+
 
 
     /**

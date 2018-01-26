@@ -207,6 +207,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             case BleControl.BLE_CONNECT_STATUS_ACCEPT_FAIL:
                 addLogs(2,"创建可通信交流通道失败，数据发送将会失败");
                 break;
+            case BleControl.BLE_STATUS_CONNECT_NO_FOUND_SERVICE_UUID:
+                addLogs(2,"找不到设备的ServiceUUID,请到设置中重新设置设备的ServiceUUID!");
+                break;
             case BleControl.BLE_STATUS_BREAK_RECONNECTION:
                 addLogs(2,"设备已断开，正在重新连接..");
                 refreshView(connectPosition,BleControl.BLE_STATUS_BREAK_RECONNECTION);
@@ -316,7 +319,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             @Override
             public void onItemClick(View view, int position) {
                 connectPosition = position;
-                BleControl.getInstance().connect(bluetoothDevices.get(position).getAddress(),true);
+                if(BleControl.getInstance().isConnect()){
+                    addLogs(2,"手动断开蓝牙..");
+                    BleControl.getInstance().disConnection();
+                }else {
+                    BleControl.getInstance().connect(bluetoothDevices.get(position).getAddress(),true);
+                }
             }
         });
     }
