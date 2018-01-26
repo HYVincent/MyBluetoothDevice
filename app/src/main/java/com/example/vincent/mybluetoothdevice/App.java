@@ -2,6 +2,7 @@ package com.example.vincent.mybluetoothdevice;
 
 import android.app.Application;
 
+import com.example.vincent.mybluetoothdevice.utils.SPUtil;
 import com.tencent.bugly.crashreport.CrashReport;
 
 /**
@@ -15,10 +16,17 @@ import com.tencent.bugly.crashreport.CrashReport;
 
 public class App extends Application {
 
+    private static SPUtil spUtil;
+
+    public static SPUtil getSpUtil() {
+        return spUtil;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
 //        CrashReport.initCrashReport(getApplicationContext());
         CrashReport.initCrashReport(getApplicationContext(), "b26ee9496b", false);
+        spUtil = SPUtil.getInstance(this,"MyBluetoothDevice");
     }
 }

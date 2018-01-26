@@ -251,7 +251,7 @@ JNIEXPORT char* JNICALL ConvertJByteaArrayToChars(JNIEnv *env, jbyteArray bytear
  * 这是解析0x86数据
  */
 extern "C"
-JNIEXPORT jstring JNICALL
+JNIEXPORT void JNICALL
 Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_analysisFromBleData0x86(JNIEnv *env,
                                                                                   jobject instance,
                                                                                   jbyteArray datas_) {
@@ -261,10 +261,6 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_analysisFromBleData0x8
     mContent[1] = datas[5];
 
     SystemConfigInfo info;
-//    info.ChannelNumber = 1;
-//    info.Pacemaker = 1;
-//    info.BreathMoni =2;
-//    info.WaveConfig = 1;
     //把jbyte转为结构体
     memcpy(&info,mContent,sizeof(SystemConfigInfo));
     env->ReleaseByteArrayElements(datas_, datas, 0);
@@ -274,5 +270,5 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_analysisFromBleData0x8
     str[1] = info.Pacemaker;
     str[2] = info.ChannelNumber;
     str[3] = info.BreathMoni;
-    return env->NewStringUTF(str);
+
 }

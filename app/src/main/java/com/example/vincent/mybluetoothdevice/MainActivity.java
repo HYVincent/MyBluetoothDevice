@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -58,20 +59,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }else {
             addLogs(2,"蓝牙已关闭!");
         }
-        findViewById(R.id.textView2).setOnClickListener(new View.OnClickListener() {
-            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
-            @Override
-            public void onClick(View view) {
-                BleControl.getInstance().openBle();
-            }
-        });
-        findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                BleControl.getInstance().closeBle();
-            }
-        });
         findViewById(R.id.button2).setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
@@ -86,7 +73,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 BleControl.getInstance().stopBleScan(false);
             }
         });
-
+        findViewById(R.id.btn_setting).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this,SettingActivity.class));
+            }
+        });
         BleControl.getInstance().registerNotification(MainActivity.this);
         BleControl.getInstance().setStatusChangeNotificationListener(new BleControl.BleStatusChangeNotificationListener() {
             @Override
@@ -308,7 +300,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        BleControl.getInstance().unRegister();
+        BleControl.getInstance().unRegister(MainActivity.this);
     }
 
     private void initRecycleView() {

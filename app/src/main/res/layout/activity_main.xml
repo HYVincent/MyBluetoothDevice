@@ -5,59 +5,37 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:text="打开蓝牙" />
-
-
-
-    <View
-        android:background="@color/colorAccent"
-        android:layout_below="@id/textView2"
-        android:id="@+id/view"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:id="@+id/rl_top_menu"
         android:layout_width="match_parent"
-        android:layout_height="1dp"/>
+        android:layout_height="wrap_content">
 
 
 
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="搜索蓝牙" />
 
 
 
-    <Button
-        android:id="@+id/button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_toEndOf="@+id/textView2"
-        android:layout_toRightOf="@+id/textView2"
-        android:text="关闭蓝牙" />
+        <Button
+            android:id="@+id/button3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="停止搜索" />
 
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_toEndOf="@+id/button"
-        android:layout_toRightOf="@+id/button"
-        android:text="搜索蓝牙" />
+        <Button
+            android:text="设置"
+            android:id="@+id/btn_setting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
 
 
-
-    <Button
-        android:id="@+id/button3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignTop="@+id/button2"
-        android:layout_toEndOf="@+id/button2"
-        android:layout_toRightOf="@+id/button2"
-        android:text="停止搜索" />
 
     <RelativeLayout
         android:id="@+id/rl_send"
@@ -84,7 +62,7 @@
 
     <LinearLayout
         android:layout_above="@id/rl_send"
-        android:layout_below="@id/view"
+        android:layout_below="@id/rl_top_menu"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -117,7 +95,7 @@
             android:layout_weight="1">
 
             <TextView
-                android:text="手法数据:"
+                android:text="状态列表:"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 

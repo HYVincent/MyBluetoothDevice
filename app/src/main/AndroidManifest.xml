@@ -36,6 +36,9 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".SettingActivity"
+            android:label="设置"/>
+
         <!-- 配置APP ID -->
         <meta-data
             android:name="BUGLY_APPID"

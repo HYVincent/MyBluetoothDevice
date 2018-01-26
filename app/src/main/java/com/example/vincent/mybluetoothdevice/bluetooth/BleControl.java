@@ -687,8 +687,10 @@ public class BleControl {
     /**
      * 取消注册
      */
-    public void unRegister(){
-        mContext.unregisterReceiver(mReceiver);
+    public void unRegister(Activity activity){
+        if(activity != null && mReceiver != null){
+            activity.unregisterReceiver(mReceiver);
+        }
     }
 
     //注销蓝牙监听

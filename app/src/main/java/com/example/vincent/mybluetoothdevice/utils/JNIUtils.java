@@ -77,8 +77,7 @@ public class JNIUtils {
         if (datas[0] == (byte) 0x7f) {
             ///系统功能信息 0x86
             if (datas[3] == (byte)BLE_CMD_SYSTEM_SURPPORT_FUNCTION_REPORT) {
-               char[] result =  analysisFromBleData0x86(datas);
-                Log.d(TAG, "judgeDataType: "+result);
+               analysisFromBleData0x86(datas);
             } else if (datas[3] == (byte)BLE_CMD_SYSTEM_CONFIG_REPORT) {
                 //0x85
 //            [self parseSystemStatus0X85:datas];
@@ -109,6 +108,6 @@ public class JNIUtils {
     }
 
 
-    public native char[] analysisFromBleData0x86(byte[] datas);
+    public native void analysisFromBleData0x86(byte[] datas);
 
 }
