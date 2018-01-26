@@ -3,6 +3,8 @@
 #include <string.h>
 #include<android/log.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <inttypes.h>
 
 ///宏定义
 ///一次数据的长度
@@ -224,53 +226,70 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_setSystemTime(JNIEnv *
             (jarray, 0, sizeof(frameBeforeBase64), frameBeforeBase64);
     return jarray;
 }
-/**
- * 数据解析
- */
+
+extern "C"
+JNIEXPORT char* JNICALL ConvertJByteaArrayToChars(JNIEnv *env, jbyteArray bytearray)
+{
+    char *chars = NULL;
+    jbyte *bytes;
+    bytes = env->GetByteArrayElements(bytearray, 0);
+    int chars_len = env->GetArrayLength(bytearray);
+    chars = new char[chars_len + 1];
+    memset(chars,0,chars_len + 1);
+    memcpy(chars, bytes, chars_len);
+    chars[chars_len] = 0;
+
+    env->ReleaseByteArrayElements(bytearray, bytes, 0);
+
+    return chars;
+}
+
+
 extern "C"
 JNIEXPORT jbyteArray JNICALL
-Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_analysisFromBleData(JNIEnv *env,jclass object,
+Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_analysisFromBleData(JNIEnv *env,
                                                                               jobject instance,
-                                                                              jcharArray  dataStr) {
-    jbyteArray mDatas;
-
-
-
+                                                                              jbyteArray datas_) {
+    jbyte *datas = env->GetByteArrayElements(datas_, NULL);
     // 所有协议均以0x7f 开头
-   /* if (mDatas[0] == (jbyte)0x7f) {
-        ///系统功能信息
+    if (datas[0] == (jbyte)0x7f) {
+        ///系统功能信息 0x86
         if (datas[3] == (jbyte)BLE_CMD_SYSTEM_SURPPORT_FUNCTION_REPORT) {
-           jbyte  infoByte [2];
+            jbyte  infoByte [2];
             infoByte[0] = datas[4];
             infoByte[1] = datas[5];
             SystemConfigInfo info;
-        //    info.ChannelNumber = 1;
-        //    info.Pacemaker = 1;
-        //    info.BreathMoni =2;
-        //    info.WaveConfig = 1;
+            //    info.ChannelNumber = 1;
+            //    info.Pacemaker = 1;
+            //    info.BreathMoni =2;
+            //    info.WaveConfig = 1;
             memcpy(&info,infoByte,sizeof(SystemConfigInfo));
-        } else if (datas[3] == BLE_CMD_SYSTEM_CONFIG_REPORT) {
+        } else if (datas[3] == (jbyte)BLE_CMD_SYSTEM_CONFIG_REPORT) {
+            //0x85
 //            [self parseSystemStatus0X85:datas];
-        }
-        else if (datas[3] ==  BLE_CMD_ALARM_ENABLE_REPORT) {
+        } else if (datas[3] == (jbyte) BLE_CMD_ALARM_ENABLE_REPORT) {
+            //0x84
 //            [self parseAlertStatus0X84:datas];
-        }
-        else if (datas[3] == BLE_CMD_SYSTEM_TIME_REPORT) {
+        } else if (datas[3] == (jbyte)BLE_CMD_SYSTEM_TIME_REPORT) {
+            //0x83
 //            [self parseSystemTime0x83:datas];
-        }
-        else  if (datas[3] == BLE_CMD_REAL_TIME_SINGLE_ECG ||datas[3]==BLE_CMD_HISTORY_SINGLE_ECG) {
-            *//*self.totalData = [NSMutableData data];
+        } else  if (datas[3] == (jbyte)BLE_CMD_REAL_TIME_SINGLE_ECG ||datas[3]==(jbyte)BLE_CMD_HISTORY_SINGLE_ECG) {
+            //0x80或者0x81
+            /*self.totalData = [NSMutableData data];
             //命令内容长度
-            int length = (int) ((datas[1] & 0xFF)| ((datas[2] & 0xFF)<<8));
+          /*  int length = (int) ((datas[1] & 0xFF)| ((datas[2] & 0xFF)<<8));
 //                       KMyLog(@"数据内容长度:---%d---",length);
             self.currentWaveDataLength = length;
             self.currentWaveData = [NSMutableData data];
-            [self parseRealTimeWaveData:characteristic.value];*//*
+            [self parseRealTimeWaveData:characteristic.value];*/
         }else{
+            //实时心电数据
 //                  [self parseRealTimeWaveData:datas];
         }
     }else{
+        //解析实时数据
 //        [self parseRealTimeWaveData:characteristic.value];
-    }*/
-    return mDatas;
+    }
+
+    env->ReleaseByteArrayElements(datas_, datas, 0);
 }

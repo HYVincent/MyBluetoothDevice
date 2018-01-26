@@ -19,11 +19,9 @@ import android.widget.EditText;
 
 import com.example.vincent.mybluetoothdevice.bluetooth.BleControl;
 import com.example.vincent.mybluetoothdevice.bluetooth.BluetoothEntity;
-import com.example.vincent.mybluetoothdevice.utils.AnalysisDataUtils;
 import com.example.vincent.mybluetoothdevice.utils.HexUtil;
 import com.example.vincent.mybluetoothdevice.utils.JNIUtils;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,16 +97,28 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String tag =  HexUtil.bytesToHexString(JNIUtils.getInstance().setSystemTime(1,1,1,1,1,1));
-                Log.d(TAG, "Test: "+tag);
-                sendData(etInput.getText().toString());
+//                String tag =  HexUtil.bytesToHexString(JNIUtils.getInstance().setSystemTime(1,1,1,1,1,1));
+//                Log.d(TAG, "Test: "+tag);
+//                sendData(etInput.getText().toString());
+
+                byte[] datas = new byte[8];
+                datas[0] = 0x7f;
+                datas[1] = 0x02;
+                datas[2] = 0x00;
+                datas[3] = (byte) 0x86;
+                datas[4] = 0x00;
+                datas[5] = 0x00;
+                datas[6] = (byte) 0x86;
+                datas[7] = (byte) 0xf7;
+                Log.d(TAG, "onDatas: 解析数据-->"+HexUtil.bytesToHexString(datas)+" "+datas.length);
+                JNIUtils.getInstance().test(datas,8);
             }
         });
         BleControl.getInstance().setDataChangeNotificationListener(new BleControl.BleDataChangeNotificationListener() {
             @Override
             public void onDatas(byte[] datas) {
                 addLogs(0,HexUtil.bytesToHexString(datas));
-//                Log.d(TAG, "onDatas: 解析数据..");
+//                Log.d(TAG, "onDatas: 解析数据-->"+HexUtil.bytesToHexString(datas));
 //                Log.d(TAG, "onDatas: "+JNIUtils.getInstance().analysisFromBleData(datas));
                /* if(datas[0] == 0x7f) {
                     System.out.println("-----------");
@@ -221,6 +231,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 break;
             case BleControl.BLE_STATUS_SCAN_START:
                 addLogs(2,"开始扫描蓝牙..");
+                if(bluetoothDevices != null && bluetoothDevices.size()>0){
+                    bluetoothDevices.clear();
+                    adapter.setDatas(bluetoothDevices);
+                }
                 break;
             case BleControl.BLE_STATUS_NO_CONNECTED:
                 addLogs(2,"数据发送失败，蓝牙未连接!");
@@ -339,10 +353,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void scanDevice(){
-        if(bluetoothDevices != null && bluetoothDevices.size()>0){
-            bluetoothDevices.clear();
-            adapter.setDatas(bluetoothDevices);
-        }
         BleControl.getInstance().scanBle(new BleControl.BleScanResultListener() {
             @Override
             public void onScanResult(List<BluetoothDevice> bluetoothDevices) {
