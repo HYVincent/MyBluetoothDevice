@@ -153,9 +153,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             return;
         }
 //        String str = HexUtil.bytesToHexString(JNIUtils.getInstance().setSystemTime(1,1,1,1,1,1));
-        String str = HexUtil.bytesToHexString(JNIUtils.getInstance().getSystemFunction());
-        BleControl.getInstance().writeBuffer(str);
-        addLogs(1,str);
+//        String str = HexUtil.bytesToHexString(JNIUtils.getInstance().getSystemFunction());
+        BleControl.getInstance().writeBuffer(s);
+        addLogs(1,s);
     }
 
 
