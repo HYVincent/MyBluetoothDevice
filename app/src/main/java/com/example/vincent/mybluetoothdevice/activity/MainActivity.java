@@ -98,9 +98,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String tag =  HexUtil.bytesToHexString(JNIUtils.getInstance().sendSystemTime0x13(1,1,1,1,1,1));
+               /* String tag =  HexUtil.bytesToHexString(JNIUtils.getInstance().sendSystemTime0x13(1,1,1,1,1,1));
                 Log.d(TAG, "Test: "+tag);
-                sendData(tag);
+                sendData(tag);*/
 //                sendData(etInput.getText().toString());
                /* String tag0x17 = HexUtil.bytesToHexString(JNIUtils.getInstance().
                         sendSetSystemStatusWithInfo0x17(0,0,0,0));
