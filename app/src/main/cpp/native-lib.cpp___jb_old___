@@ -501,14 +501,14 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_parseECGData(JNIEnv *e
     BTDataInfo info;
     //把jbyte转为结构体
     memcpy(&info, ff, sizeof(BTDataInfo));
-//    env->ReleaseByteArrayElements(datas2_, datas2, 0);
+    env->ReleaseByteArrayElements(datas2_, datas2, 0);
 
-    jclass clazz;
-    jfieldID fid;
-    clazz = (env)->GetObjectClass(infoxx);
-    if (0 == clazz) {
-        LOGD("获取对象失败");
-    } else {
+//    jclass clazz;
+//    jfieldID fid;
+//    clazz = (env)->GetObjectClass(infoxx);
+//    if (0 == clazz) {
+//        LOGD("获取对象失败");
+//    } else {
         //Java 类型     符号
 //        boolean    Z
 //        byte    B
@@ -523,5 +523,5 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_parseECGData(JNIEnv *e
 //        fid = (env)->GetFieldID(clazz, "Year", "I");
 //        (env)->SetIntField(infoxx,fid,info.Year);
 
-    }
+//    }
 }

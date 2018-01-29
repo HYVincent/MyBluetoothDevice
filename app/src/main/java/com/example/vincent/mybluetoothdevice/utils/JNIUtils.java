@@ -25,26 +25,26 @@ public class JNIUtils {
     private static final String TAG = JNIUtils.class.getSimpleName();
     private static JNIUtils instance;
 
-    private static final int BLE_CMD_GET_SPECIFIC_ID_PACKET   = 0x10;
-    private static final int BLE_CMD_GET_SYSTEM_STATUS    = 0x11;
-    private static final int BLE_CMD_GET_SYSTEM_TIME     = 0x12;
-    private static final int BLE_CMD_SET_SYSTEM_TIME     = 0x13;
-    private static final int  BLE_CMD_GET_ALARM_ENABLE    = 0x14;
-    private static final int BLE_CMD_SET_ALARM_ENABLE    = 0x15;
-    private static final int BLE_CMD_GET_SYSTEM_CONFIG    = 0x16;
-    private static final int  BLE_CMD_SET_SYSTEM_CONFIG    = 0x17;
-    private static final int BLE_CMD_GET_SYSTEM_SUPPORT_FUNCTION  = 0x18;
+    private static final byte BLE_CMD_GET_SPECIFIC_ID_PACKET   = 0x10;
+    private static final byte BLE_CMD_GET_SYSTEM_STATUS    = 0x11;
+    private static final byte BLE_CMD_GET_SYSTEM_TIME     = 0x12;
+    private static final byte BLE_CMD_SET_SYSTEM_TIME     = 0x13;
+    private static final byte  BLE_CMD_GET_ALARM_ENABLE    = 0x14;
+    private static final byte BLE_CMD_SET_ALARM_ENABLE    = 0x15;
+    private static final byte BLE_CMD_GET_SYSTEM_CONFIG    = 0x16;
+    private static final byte  BLE_CMD_SET_SYSTEM_CONFIG    = 0x17;
+    private static final byte BLE_CMD_GET_SYSTEM_SUPPORT_FUNCTION  = 0x18;
 
-    private static final int BLE_CMD_REAL_TIME_SINGLE_ECG   = 0x80;
-    private static final int BLE_CMD_HISTORY_SINGLE_ECG    = 0x81;
-    private static final int  BLE_CMD_SYSTEM_STATUS_REPORT   = 0x82;
-    private static final int BLE_CMD_SYSTEM_TIME_REPORT    = 0x83;
-    private static final int  BLE_CMD_ALARM_ENABLE_REPORT    = 0x84;
-    private static final int  BLE_CMD_SYSTEM_CONFIG_REPORT   = 0x85;
-    private static final int  BLE_CMD_SYSTEM_SURPPORT_FUNCTION_REPORT = 0x86;
-    private static final int  BLE_CMD_PATIENT_TAG_REPORT    = 0x88;
+    private static final byte BLE_CMD_REAL_TIME_SINGLE_ECG   = (byte)0x80;
+    private static final byte BLE_CMD_HISTORY_SINGLE_ECG    = (byte)0x81;
+    private static final byte  BLE_CMD_SYSTEM_STATUS_REPORT   = (byte)0x82;
+    private static final byte BLE_CMD_SYSTEM_TIME_REPORT    = (byte)0x83;
+    private static final byte  BLE_CMD_ALARM_ENABLE_REPORT    = (byte)0x84;
+    private static final byte  BLE_CMD_SYSTEM_CONFIG_REPORT   = (byte)0x85;
+    private static final byte  BLE_CMD_SYSTEM_SURPPORT_FUNCTION_REPORT = (byte)0x86;
+    private static final byte  BLE_CMD_PATIENT_TAG_REPORT    = (byte)0x88;
 
-    private static final int  BLE_CMD_MAX           = 0xFF;
+    private static final byte  BLE_CMD_MAX           = (byte)0xFF;
 
     public static JNIUtils getInstance() {
         if(instance == null){
@@ -137,7 +137,7 @@ public class JNIUtils {
             }
         }
 
-        if (currentWaveData.size() > 3) {
+        if (currentWaveData != null && currentWaveData.size() > 3) {
             if (currentWaveData.get(0) == (byte)0x7f && (currentWaveData.get(3)== (byte)BLE_CMD_REAL_TIME_SINGLE_ECG ||(currentWaveData.get(3)== (byte)BLE_CMD_HISTORY_SINGLE_ECG))){
                 //正确的包头。
                 int length = (int) ((currentWaveData.get(1) & 0xFF)| ((currentWaveData.get(2) & 0xFF)<<8));
@@ -176,11 +176,13 @@ public class JNIUtils {
             //TODO 解析数据
             byte[]  datas2 = new byte[currentWaveData.size()];
             for (int i =0;i<currentWaveData.size();i++){
-                datas2[i] = currentWaveData.get(i);
+                if(currentWaveData != null && currentWaveData.size()>0){
+                    datas2[i] = currentWaveData.get(i);
+                }
             }
             BTDataInfo info = new BTDataInfo();
             parseECGData(datas2,info);
-
+            Log.d(TAG, "parseRealTimeWaveData: info-->"+info.PacketId);
             Log.d(TAG, "parseRealTimeWaveData: "+JSON.toJSONString(currentWaveData));
             Log.d(TAG, "parseRealTimeWaveData: ....");
      /*     BTDataInfo dataInfo;
@@ -213,6 +215,7 @@ public class JNIUtils {
         });
 */
             currentWaveData .clear();
+            currentWaveData = new ArrayList<>();
             ///粘包中数据拆分进行下一次解析
             ///获取截取位置
             int subIndex = 0;
@@ -245,20 +248,26 @@ public class JNIUtils {
     }
 
 
-
+    /**
+     * 搜索包头
+     */
     private void searchDataHeader() {
         //包头不正确时
-        //循环检索是否有包头
+        //循环检索是否有包头 如果有，则表示为包头的下标值
         int subIndex = -1;
+        if(currentWaveData == null){
+            return;
+        }
         for (int i = 0; i < currentWaveData.size()-1; i ++) {
-            if (currentWaveData.get(i) == 0x7f  ) {
+            byte values = currentWaveData.get(i);
+            if (values == 0x7f  ) {
                 subIndex = i;
             }
         }
         ///检测到了包头
         if (subIndex != -1) {
             Byte[] subBytes = new Byte[currentWaveData.size()-subIndex];
-            for (int i = 0; i < currentWaveData.size()-1; i ++) {
+            for (int i = 0; i < subBytes.length-1; i ++) {
                 subBytes[i]  = currentWaveData.get(subIndex+i);
             }
             ///重新拼接
