@@ -158,7 +158,7 @@ jarray analysis0x86(jbyte *datas);
 
 extern "C"
 JNIEXPORT jbyteArray JNICALL
-Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_getSystemFunction(JNIEnv *env,
+Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_getSystemFunction0x18(JNIEnv *env,
                                                                             jobject instance) {
 
     jbyte  frameBeforeBase64 [6];
@@ -414,7 +414,7 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_parseSystemTime0x83(JN
     mContent[3] = datas[7];
     SystemTimeInfo info;
     //把jbyte转为结构体
-    memcpy(&info,mContent,sizeof(SystemConfigInfo));
+    memcpy(&info,mContent,sizeof(SystemTimeInfo));
     env->ReleaseByteArrayElements(datas_, datas, 0);
 
 //    char str[4];
@@ -427,7 +427,7 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_parseSystemTime0x83(JN
     jfieldID fid;
 
     // mapping bar of C to foo
-//    clazz = (env)->GetObjectClass(env, systemConfigInfo);
+    //    clazz = (env)->GetObjectClass(env, systemConfigInfo);
     clazz = (env)->GetObjectClass(infoxx);
     if (0 == clazz) {
 //        LOGD("GetObjectClass returned");
@@ -465,3 +465,69 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_parseSystemTime0x83(JN
 
 }
 
+/**
+ * 获取报警开关状态
+ */
+extern "C"
+JNIEXPORT jbyteArray JNICALL
+Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_getAlertStatus0x14(JNIEnv *env,
+                                                                             jobject instance) {
+
+    jbyte  frameBeforeBase64 [6];
+    ///命令头
+    frameBeforeBase64[0] = BLE_PACKET_HEAD;
+    ///命令内容长度 两个字节
+    frameBeforeBase64[1] = 0x0;
+    frameBeforeBase64[2] = 0x0;
+    ///命令字
+    frameBeforeBase64[3] =   BLE_CMD_GET_ALARM_ENABLE;
+    ///命令内容 无
+    ///校验和
+    frameBeforeBase64[4] = frameBeforeBase64[3];
+    frameBeforeBase64[5] = 0xF7;
+
+    jbyteArray jarray = env->NewByteArray(sizeof(frameBeforeBase64));
+    (env)->SetByteArrayRegion
+            (jarray, 0, sizeof(frameBeforeBase64), frameBeforeBase64);
+    return jarray;
+}
+
+/**
+ * 解析心电数据
+ */
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_parseECGData(JNIEnv *env,
+                                                                       jobject instance,
+                                                                       jbyteArray datas2_,
+                                                                       jobject infoxx) {
+    jbyte *datas2 = env->GetByteArrayElements(datas2_, NULL);
+    /*jbyte ff[sizeof(datas2)];
+    memcpy(&datas2, ff, sizeof(datas2));
+    BTDataInfo info;
+    //把jbyte转为结构体
+    memcpy(&info, datas2, sizeof(SystemTimeInfo));
+    env->ReleaseByteArrayElements(datas2_, datas2, 0);*/
+
+    jclass clazz;
+    jfieldID fid;
+    clazz = (env)->GetObjectClass(infoxx);
+    if (0 == clazz) {
+        LOGD("获取对象失败");
+    } else {
+        //Java 类型     符号
+//        boolean    Z
+//        byte    B
+//        char    C
+//        short    S
+//        int    I
+//        long    L
+//        float    F
+//        double    D
+//        void    V
+        //设置属性
+//        fid = (env)->GetFieldID(clazz, "Year", "I");
+//        (env)->SetIntField(infoxx,fid,info.Year);
+
+    }
+}

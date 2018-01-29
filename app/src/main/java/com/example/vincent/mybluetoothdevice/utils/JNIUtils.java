@@ -3,8 +3,13 @@ package com.example.vincent.mybluetoothdevice.utils;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
+import com.example.vincent.mybluetoothdevice.bluetooth.BleControl;
+import com.example.vincent.mybluetoothdevice.entity.BTDataInfo;
 import com.example.vincent.mybluetoothdevice.entity.SystemConfigInfo;
 import com.example.vincent.mybluetoothdevice.entity.SystemTimeInfo;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Vincent QQ:1032006226
@@ -41,7 +46,6 @@ public class JNIUtils {
 
     private static final int  BLE_CMD_MAX           = 0xFF;
 
-
     public static JNIUtils getInstance() {
         if(instance == null){
             instance = new JNIUtils();
@@ -57,7 +61,7 @@ public class JNIUtils {
      * 发送数据，获取系统功能
      * @return
      */
-    public native byte[] getSystemFunction();
+    public native byte[] getSystemFunction0x18();
 
     /**
      * 设置系统时间
@@ -77,7 +81,6 @@ public class JNIUtils {
      * @param datas
      */
     public void judgeDataType(byte[] datas){
-
         if (datas[0] == (byte) 0x7f) {
             ///系统功能信息 0x86
             if (datas[3] == (byte)BLE_CMD_SYSTEM_SURPPORT_FUNCTION_REPORT) {
@@ -94,16 +97,10 @@ public class JNIUtils {
                 //0x83
                 SystemTimeInfo info = new SystemTimeInfo();
                 parseSystemTime0x83(datas,info);
-                Log.d(TAG, "judgeDataType: "+ JSON.toJSONString(info));
+                Log.d(TAG, "judgeDataType 000: "+ JSON.toJSONString(info));
             } else  if (datas[3] == (byte)BLE_CMD_REAL_TIME_SINGLE_ECG ||datas[3]==(byte) BLE_CMD_HISTORY_SINGLE_ECG) {
-                //0x80或者0x81
-            /*self.totalData = [NSMutableData data];
-            //命令内容长度
-          /*  int length = (int) ((datas[1] & 0xFF)| ((datas[2] & 0xFF)<<8));
-//                       KMyLog(@"数据内容长度:---%d---",length);
-            self.currentWaveDataLength = length;
-            self.currentWaveData = [NSMutableData data];
-            [self parseRealTimeWaveData:characteristic.value];*/
+                //0x80或者0x81 解析实时数据或者是历史数据
+                parseRealTimeWaveData(datas);
             }else{
                 //实时心电数据
 //                  [self parseRealTimeWaveData:datas];
@@ -111,8 +108,167 @@ public class JNIUtils {
         }else{
             //解析实时数据
 //        [self parseRealTimeWaveData:characteristic.value];
+            parseRealTimeWaveData(datas);
         }
 
+    }
+    /**
+     * 波形数字
+     */
+    private List<Byte> allData = new ArrayList<>();
+    private List<Byte> currentWaveData = new ArrayList<>();
+    private int currentWaveDataLength;
+
+    /**
+     * 解析心电图数据
+     * @param datas
+     */
+    private void parseRealTimeWaveData(byte[] datas) {
+        //把数据添加进去
+        for (int i = 0;i<datas.length;i++){
+            allData.add(datas[i]);
+        }
+        if (currentWaveData == null) {
+            currentWaveData = new ArrayList<>();
+        }
+        if (currentWaveData.size() < currentWaveDataLength+6) {
+            for (int i = 0;i<datas.length;i++){
+                currentWaveData.add(datas[i]);
+            }
+        }
+
+        if (currentWaveData.size() > 3) {
+            if (currentWaveData.get(0) == (byte)0x7f && (currentWaveData.get(3)== (byte)BLE_CMD_REAL_TIME_SINGLE_ECG ||(currentWaveData.get(3)== (byte)BLE_CMD_HISTORY_SINGLE_ECG))){
+                //正确的包头。
+                int length = (int) ((currentWaveData.get(1) & 0xFF)| ((currentWaveData.get(2) & 0xFF)<<8));
+                currentWaveDataLength = length;
+            }else{
+                searchDataHeader();
+            }
+        }
+
+        if (currentWaveData.size() >= currentWaveDataLength+6) {
+//         粘包
+            Integer leng =  currentWaveDataLength+6;
+            Byte[] tempByte = new Byte[leng];
+//            Byte  *allByte =(Byte *) [currentWaveData bytes];
+            for (int i = 0; i < leng ; i++) {
+                tempByte[i] = currentWaveData.get(i);
+            }
+            //总的长度里是否以标识位结尾
+            if (tempByte[leng-1] != (byte) 0xf7) {
+                ///监测是否有包头
+                searchDataHeader();
+                return;
+            }
+            ///保存本地数据
+            currentWaveData.clear();
+            for (int i=0;i<tempByte.length;i++){
+                currentWaveData.add(tempByte[i]);
+            }
+            ///截取之后做解析。
+            //解析数据包
+//        allByte =(Byte *) [currentWaveData bytes];
+            Byte[]  contentBytes = new Byte[currentWaveDataLength];
+            for (int i = 0; i < currentWaveDataLength; i++) {
+                contentBytes[i] = currentWaveData.get(i+4);
+            }
+            //TODO 解析数据
+            byte[]  datas2 = new byte[currentWaveData.size()];
+            for (int i =0;i<currentWaveData.size();i++){
+                datas2[i] = currentWaveData.get(i);
+            }
+            BTDataInfo info = new BTDataInfo();
+            parseECGData(datas2,info);
+
+            Log.d(TAG, "parseRealTimeWaveData: "+JSON.toJSONString(currentWaveData));
+            Log.d(TAG, "parseRealTimeWaveData: ....");
+     /*     BTDataInfo dataInfo;
+            memcpy(&dataInfo,contentBytes,sizeof(BTDataInfo));
+//        NSData *pointData = [NSData dataWithBytes:dataInfo.Data length:sizeof(dataInfo.Data)];
+
+            //TODO 发送消息 确认收到
+            BleControl.getInstance().writeBuffer();
+
+        [self confirmWaveDataReceiveSuccessWithDataId:dataInfo.PacketId andType:tempByte[3]];
+            dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+            dispatch_async(queue, ^{
+            ///注意这个是否正确
+            ///数据处理放到异步线程
+            if (allByte[3] == BLE_CMD_HISTORY_SINGLE_ECG) {
+                ///历史数据下标加1
+                currentHistoryIndex +=1;
+                NSString *numStr =  [NSString stringWithFormat:@"%d",dataInfo.PacketId];
+                if (![haveSendHistoryIDArr containsObject:numStr]) {
+                 [haveSendHistoryIDArr addObject:numStr];
+                }
+                //添加到本地数组
+            [self addSaveModelArrWithDataInfo:dataInfo];
+            [self reGetWaveDateWithArr:needSendHistoryIDArr];
+            }else{
+                ///解析数据后添加到显示数组
+         [self parsingTheRawDataWithDataInfo:dataInfo];
+         [self addSaveModelArrWithDataInfo:dataInfo];
+            }
+        });
+*/
+            currentWaveData .clear();
+            ///粘包中数据拆分进行下一次解析
+            ///获取截取位置
+            int subIndex = 0;
+            for (int i = 0; i < datas.length-1; i ++) {
+                if (datas[i] == 0xf7 && datas[i+1] == 0x7f) {
+                    subIndex = i+1;
+                }
+            }
+            Byte[] subBytes = new Byte[datas.length-subIndex];
+            for (int i = 0; i < datas.length-1; i ++) {
+                subBytes[i] = datas[subIndex+i];
+            }
+            if (subBytes.length < 3) {
+                ///直接拼接
+                for (int i = 0;i<subBytes.length;i++){
+                    currentWaveData.add(subBytes[i]);
+                }
+                return;
+            }
+            if (subBytes[0] == 0x7f && (subBytes[3]==BLE_CMD_REAL_TIME_SINGLE_ECG || subBytes[3]==BLE_CMD_HISTORY_SINGLE_ECG)) {
+                ///获取长度
+                int length = (int) ((subBytes[1] & 0xFF)| ((subBytes[2] & 0xFF)<<8));
+                currentWaveDataLength = length;
+                currentWaveData.clear();
+                for (int i = 0;i<subBytes.length;i++){
+                    currentWaveData.add(subBytes[i]);
+                }
+            }
+        }
+    }
+
+
+
+    private void searchDataHeader() {
+        //包头不正确时
+        //循环检索是否有包头
+        int subIndex = -1;
+        for (int i = 0; i < currentWaveData.size()-1; i ++) {
+            if (currentWaveData.get(i) == 0x7f  ) {
+                subIndex = i;
+            }
+        }
+        ///检测到了包头
+        if (subIndex != -1) {
+            Byte[] subBytes = new Byte[currentWaveData.size()-subIndex];
+            for (int i = 0; i < currentWaveData.size()-1; i ++) {
+                subBytes[i]  = currentWaveData.get(subIndex+i);
+            }
+            ///重新拼接
+            currentWaveData.clear();
+            for (int i = 0;i<subBytes.length;i++){
+                currentWaveData.add(subBytes[i]);
+            }
+        }else{
+            currentWaveData.clear();
+        }
     }
 
     /**
@@ -141,4 +297,16 @@ public class JNIUtils {
      */
     public native byte[] sendAlertSwitch0x15WithInfo0x15(int LowPowerAlert,int FlashAlert,int LeadAlert,int BloothStatusAlert);
 
+    /**
+     * 获取报警开关状态
+     * @return
+     */
+    public native byte[] getAlertStatus0x14();
+
+    /**
+     * 解析数据
+     * @param datas2
+     * @param info
+     */
+    private native void parseECGData(byte[] datas2, BTDataInfo info);
 }

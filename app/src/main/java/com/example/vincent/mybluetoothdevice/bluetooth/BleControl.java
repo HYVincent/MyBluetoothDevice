@@ -77,6 +77,8 @@ public class BleControl {
     public static final int BLE_STATUS_CLOSE = 102;
     //蓝牙状态，开始扫描
     public static final int BLE_STATUS_SCAN_START = 103;
+    //蓝牙已连接，请断开之后再扫描
+    public static final int BLE_STATUS_SCAN_FAILE = 117;
     //蓝牙状态，扫描结束
     public static final int BLE_STATUS_SCAN_STOP = 104;
     //蓝牙状态，扫描中断，用户手动终止
@@ -645,6 +647,12 @@ public class BleControl {
         this.scanResultListener = listener;
         if(mBleAdapter == null){
             Log.e(TAG, "scanBle: mBleAdapter is null");
+            return;
+        }
+        if(isConnect){
+            if(hasStatusChangeNotificationListener()){
+                statusChangeNotificationListener.onChangeStatus(BLE_STATUS_SCAN_FAILE);
+            }
             return;
         }
         if(!isEnable()){

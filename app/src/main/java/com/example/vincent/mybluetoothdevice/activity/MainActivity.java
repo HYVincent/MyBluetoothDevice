@@ -98,8 +98,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                String tag =  HexUtil.bytesToHexString(JNIUtils.getInstance().setSystemTime0x13(1,1,1,1,1,1));
-//                Log.d(TAG, "Test: "+tag);
+                String tag =  HexUtil.bytesToHexString(JNIUtils.getInstance().sendSystemTime0x13(1,1,1,1,1,1));
+                Log.d(TAG, "Test: "+tag);
+                sendData(tag);
 //                sendData(etInput.getText().toString());
                /* String tag0x17 = HexUtil.bytesToHexString(JNIUtils.getInstance().
                         sendSetSystemStatusWithInfo0x17(0,0,0,0));
@@ -110,9 +111,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 Log.d(TAG, "onClick: 0x15:"+tag0x15);
                 sendData(tag0x15);*/
 
-                String tag0x13 = HexUtil.bytesToHexString(JNIUtils.getInstance().sendSystemTime0x13(18,1,26,17,17,40));
+                /*String tag0x13 = HexUtil.bytesToHexString(JNIUtils.getInstance().sendSystemTime0x13(18,1,26,17,17,40));
                 Log.d(TAG, "onClick: 0x15:"+tag0x13);
-                sendData(tag0x13);
+                sendData(tag0x13);*/
+
+               /* String tag0x14 = HexUtil.bytesToHexString(JNIUtils.getInstance().getAlertStatus0x14());
+                sendData(tag0x14);*/
 
                 /*byte[] datas = new byte[8];
                 datas[0] = 0x7f;
@@ -205,6 +209,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             case BluetoothAdapter.STATE_OFF:
                 addLogs(2,"蓝牙已关闭!");
                 break;
+            case BleControl.BLE_STATUS_SCAN_FAILE:
+                addLogs(2,"如需扫描，请先断开蓝牙!");
+                break;
             case BleControl.BLE_STATUS_SCAN_BREAK:
                 addLogs(2,"用户手动停止蓝牙扫描!");
                 break;
@@ -271,8 +278,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      */
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void getSystemFunction() {
-        addLogs(1,HexUtil.bytesToHexString(JNIUtils.getInstance().getSystemFunction()));
-        BleControl.getInstance().writeBuffer(HexUtil.bytesToHexString(JNIUtils.getInstance().getSystemFunction()));
+        addLogs(1,HexUtil.bytesToHexString(JNIUtils.getInstance().getSystemFunction0x18()));
+        BleControl.getInstance().writeBuffer(HexUtil.bytesToHexString(JNIUtils.getInstance().getSystemFunction0x18()));
     }
 
     /**

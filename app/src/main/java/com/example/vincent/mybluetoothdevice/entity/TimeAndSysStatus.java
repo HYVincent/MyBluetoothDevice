@@ -10,4 +10,14 @@ package com.example.vincent.mybluetoothdevice.entity;
  */
 
 public class TimeAndSysStatus {
+
+    ///系统时间
+    public TimeInfo Time;
+    public Status status;
+
+    public class Status{
+        public int Resv;
+        public SystemDataStatus SysSta;
+    }
+
 }
