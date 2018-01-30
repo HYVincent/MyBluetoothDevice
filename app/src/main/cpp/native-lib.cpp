@@ -254,9 +254,7 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_analysisFromBleData0x8
 
         fid = (env)->GetFieldID(clazz,"WaveConfig","I");
         env->SetIntField(systemConfigInfo,fid,info.WaveConfig);
-
     }
-
 }
 
 
@@ -522,6 +520,45 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_parseECGData(JNIEnv *e
         //设置属性
 //        fid = (env)->GetFieldID(clazz, "Year", "I");
 //        (env)->SetIntField(infoxx,fid,info.Year);
-
     }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_parseAlertStatus0X84(JNIEnv *env,
+                                                                               jobject instance,
+                                                                               jbyteArray datas_,
+                                                                               jobject infos) {
+    jbyte *datas = env->GetByteArrayElements(datas_, NULL);
+
+    jbyte mContent[2];
+    mContent[0] = datas[4];
+    mContent[1] = datas[5];
+
+    SystemAlertInfo info;
+    //把jbyte转为结构体
+    memcpy(&info,mContent,sizeof(SystemConfigInfo));
+    env->ReleaseByteArrayElements(datas_, datas, 0);
+
+    jclass clazz;
+    jfieldID fid;
+
+    clazz = (env)->GetObjectClass(infos);
+    if (0 == clazz) {
+        LOGD("获取对象失败");
+    } else{
+        //设置属性
+        fid = (env)->GetFieldID(clazz, "LowPowerAlert", "I");
+        (env)->SetIntField(infos,fid,info.LowPowerAlert);
+
+        fid = (env)->GetFieldID(clazz,"FlashAlert","I");
+        env->SetIntField(infos,fid,info.FlashAlert);
+
+        fid = (env)->GetFieldID(clazz,"LeadAlert","I");
+        env->SetIntField(infos,fid,info.LeadAlert);
+
+        fid = (env)->GetFieldID(clazz,"BloothStatusAlert","I");
+        env->SetIntField(infos,fid,info.BloothStatusAlert);
+
+    env->ReleaseByteArrayElements(datas_, datas, 0);
 }

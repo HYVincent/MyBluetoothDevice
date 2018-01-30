@@ -97,8 +97,12 @@ public class BleControl {
     public static final int BLE_STATUS_BREAK_RECONNECTION = 110;
     //数据发送失败
     public static final int BLE_STATUS_SEND_DATE_FAILE = 111;
-    //数据发送失败
+    //数据发送成功
     public static final int BLE_STATUS_SEND_DATE_SUCCESS = 112;
+    /**
+     * 设备收到数据改变
+     */
+    public static final int BLE_STATUS_DEVICE_ACCEPT_DATA = 118;
     //发送数据，但是蓝牙此时未连接
     public static final int BLE_STATUS_NO_CONNECTED = 113;
     //蓝牙连接成功之后成功创建了可通信通道，表示可以向设备发送数据了
@@ -446,7 +450,7 @@ public class BleControl {
             super.onCharacteristicWrite(gatt, characteristic, status);
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 if(hasStatusChangeNotificationListener()){
-                    statusChangeNotificationListener.onChangeStatus(BLE_STATUS_SEND_DATE_SUCCESS);
+                    statusChangeNotificationListener.onChangeStatus(BLE_STATUS_DEVICE_ACCEPT_DATA);
                 }
                 Log.e(TAG, "Send data success!");
             } else {

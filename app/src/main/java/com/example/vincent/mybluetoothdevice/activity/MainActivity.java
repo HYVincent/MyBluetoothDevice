@@ -33,7 +33,7 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks{
 
-    private static final String TAG = "BluetoothDevice";
+    private static final String TAG = "MainActivity";
     private List<BluetoothEntity> bluetoothDevices = new ArrayList<>();
     private List<DataEntity> dataEntities = new ArrayList<>();
     private RecyclerView rlv;
@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               /* String tag =  HexUtil.bytesToHexString(JNIUtils.getInstance().sendSystemTime0x13(1,1,1,1,1,1));
+              /*  String tag =  HexUtil.bytesToHexString(JNIUtils.getInstance().sendSystemTime0x13(1,1,1,1,1,1));
                 Log.d(TAG, "Test: "+tag);
                 sendData(tag);*/
 //                sendData(etInput.getText().toString());
@@ -107,9 +107,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 Log.d(TAG, "onClick: 0x17:"+tag0x17);
                 sendData(tag0x17);*/
 
-              /*  String tag0x15 = HexUtil.bytesToHexString(JNIUtils.getInstance().sendAlertSwitch0x15WithInfo0x15(0,0,0,0));
+               String tag0x15 = HexUtil.bytesToHexString(JNIUtils.getInstance().sendAlertSwitch0x15WithInfo0x15(0,0,0,0));
                 Log.d(TAG, "onClick: 0x15:"+tag0x15);
-                sendData(tag0x15);*/
+                sendData(tag0x15);
 
                 /*String tag0x13 = HexUtil.bytesToHexString(JNIUtils.getInstance().sendSystemTime0x13(18,1,26,17,17,40));
                 Log.d(TAG, "onClick: 0x15:"+tag0x13);
@@ -252,6 +252,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             case BleControl.BLE_STATUS_SEND_DATE_SUCCESS:
                 addLogs(2,"数据发送成功!");
                 break;
+            case BleControl.BLE_STATUS_DEVICE_ACCEPT_DATA:
+                addLogs(2,"设备已经接收到数据！");
+                break;
             case BleControl.BLE_STATUS_SCAN_START:
                 addLogs(2,"开始扫描蓝牙..");
                 if(bluetoothDevices != null && bluetoothDevices.size()>0){
@@ -278,8 +281,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      */
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void getSystemFunction() {
-        addLogs(1,HexUtil.bytesToHexString(JNIUtils.getInstance().getSystemFunction0x18()));
-        BleControl.getInstance().writeBuffer(HexUtil.bytesToHexString(JNIUtils.getInstance().getSystemFunction0x18()));
+//        addLogs(1,HexUtil.bytesToHexString(JNIUtils.getInstance().getSystemFunction0x18()));
+//        BleControl.getInstance().writeBuffer(HexUtil.bytesToHexString(JNIUtils.getInstance().getSystemFunction0x18()));
     }
 
     /**

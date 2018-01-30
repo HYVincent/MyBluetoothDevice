@@ -3,8 +3,10 @@ package com.example.vincent.mybluetoothdevice.utils;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.example.vincent.mybluetoothdevice.bluetooth.BleControl;
 import com.example.vincent.mybluetoothdevice.entity.BTDataInfo;
+import com.example.vincent.mybluetoothdevice.entity.SystemAlertInfo;
 import com.example.vincent.mybluetoothdevice.entity.SystemConfigInfo;
 import com.example.vincent.mybluetoothdevice.entity.SystemTimeInfo;
 
@@ -81,7 +83,9 @@ public class JNIUtils {
      * @param datas
      */
     public void judgeDataType(byte[] datas){
-        if (datas[0] == (byte) 0x7f) {
+        getOneFullData(datas);
+
+        /*if (datas[0] == (byte) 0x7f) {
             ///系统功能信息 0x86
             if (datas[3] == (byte)BLE_CMD_SYSTEM_SURPPORT_FUNCTION_REPORT) {
                 SystemConfigInfo info = new SystemConfigInfo();
@@ -100,185 +104,186 @@ public class JNIUtils {
                 Log.d(TAG, "judgeDataType 000: "+ JSON.toJSONString(info));
             } else  if (datas[3] == (byte)BLE_CMD_REAL_TIME_SINGLE_ECG ||datas[3]==(byte) BLE_CMD_HISTORY_SINGLE_ECG) {
                 //0x80或者0x81 解析实时数据或者是历史数据
-                parseRealTimeWaveData(datas);
+//                parseRealTimeWaveData(datas);
+
             }else{
                 //实时心电数据
 //                  [self parseRealTimeWaveData:datas];
+                jiexiData(datas);
             }
         }else{
             //解析实时数据
 //        [self parseRealTimeWaveData:characteristic.value];
-            parseRealTimeWaveData(datas);
-        }
+//            parseRealTimeWaveData(datas);
+            jiexiData(datas);
+        }*/
 
     }
-    /**
-     * 波形数字
-     */
-    private List<Byte> allData = new ArrayList<>();
-    private List<Byte> currentWaveData = new ArrayList<>();
-    private int currentWaveDataLength;
+    //存放接收到的所有数据
+    private  List<Byte> allData = new ArrayList<>();
+    //存放一个完整的命令内容
+    private  List<Byte> contentDatas = new ArrayList<>();
+
+    //在allData中找到第一个0x7f的位置
+    private int index0x7f = -1;
+    //表示命令内容的长度
+    private int contentLength = -1;
+    //命令字
+    private byte commandWord;
+    //结束下标
+    private int index0xf7 = -1;
 
     /**
-     * 解析心电图数据
+     * 解析数据
      * @param datas
      */
-    private void parseRealTimeWaveData(byte[] datas) {
-        //把数据添加进去
-        for (int i = 0;i<datas.length;i++){
-            allData.add(datas[i]);
+    private void getOneFullData(byte[] datas) {
+        //把datas添加到allData中
+        addAllDatas(datas);
+        if(contentDatas.size() == 0){
+            find0x7fInAllData();
         }
-        if (currentWaveData == null) {
-            currentWaveData = new ArrayList<>();
-        }
-        if (currentWaveData.size() < currentWaveDataLength+6) {
-            for (int i = 0;i<datas.length;i++){
-                currentWaveData.add(datas[i]);
+        //找到0x7f了
+        if(index0x7f != -1){
+            //已找到0x7f的位置，在0x7f之前的数据丢弃
+            removeIndexBeforeItem(index0x7f);
+            //判断数据长度大于3并且f7的下标没找到才去找，找到了就不找了
+            if(allData.size()>3){
+                //得到数据内容的长度 因为是高位在前 低位在后 长度占两个字节，0为0x7f标志位，1、2两个
+                contentLength = getContentLength(allData.get(index0x7f+1),allData.get(index0x7f+2));
+                Log.d(TAG, "jiexiData:contentLength="+contentLength);
+                //命令字的内容
+                commandWord = allData.get(index0x7f + 3);
+                index0xf7 = index0x7f + 4+ contentLength + 2 -1;
             }
-        }
-
-        if (currentWaveData != null && currentWaveData.size() > 3) {
-            if (currentWaveData.get(0) == (byte)0x7f && (currentWaveData.get(3)== (byte)BLE_CMD_REAL_TIME_SINGLE_ECG ||(currentWaveData.get(3)== (byte)BLE_CMD_HISTORY_SINGLE_ECG))){
-                //正确的包头。
-                int length = (int) ((currentWaveData.get(1) & 0xFF)| ((currentWaveData.get(2) & 0xFF)<<8));
-                currentWaveDataLength = length;
-            }else{
-                searchDataHeader();
-            }
-        }
-
-        if (currentWaveData.size() >= currentWaveDataLength+6) {
-//         粘包
-            Integer leng =  currentWaveDataLength+6;
-            Byte[] tempByte = new Byte[leng];
-//            Byte  *allByte =(Byte *) [currentWaveData bytes];
-            for (int i = 0; i < leng ; i++) {
-                tempByte[i] = currentWaveData.get(i);
-            }
-            //总的长度里是否以标识位结尾
-            if (tempByte[leng-1] != (byte) 0xf7) {
-                ///监测是否有包头
-                searchDataHeader();
-                return;
-            }
-            ///保存本地数据
-            currentWaveData.clear();
-            for (int i=0;i<tempByte.length;i++){
-                currentWaveData.add(tempByte[i]);
-            }
-            ///截取之后做解析。
-            //解析数据包
-//        allByte =(Byte *) [currentWaveData bytes];
-            Byte[]  contentBytes = new Byte[currentWaveDataLength];
-            for (int i = 0; i < currentWaveDataLength; i++) {
-                contentBytes[i] = currentWaveData.get(i+4);
-            }
-            //TODO 解析数据
-            byte[]  datas2 = new byte[currentWaveData.size()];
-            for (int i =0;i<currentWaveData.size();i++){
-                if(currentWaveData != null && currentWaveData.size()>0){
-                    datas2[i] = currentWaveData.get(i);
+            if(allData.size()>index0xf7){
+                Log.d(TAG, "jiexiData: 所有数据："+JSONArray.toJSONString(allData));
+                //表示已经接收完了一个完整的数据了，
+                Log.d(TAG, "jiexiData: index0xf7 = "+allData.get(index0xf7-1));
+                //判断一下命令尾部是否正确 247表示为16进制的 0xf7
+                if(allData.get(0) == (byte)0x7f && allData.get(index0xf7) == (byte)0xf7  ){
+                    for (int i = index0x7f;i<index0xf7+1;i++){
+                        contentDatas.add(allData.get(i));
+                    }
+                    Log.d(TAG, "jiexiData: 解析数据..");
+                    //解析命令内容
+                    parseContentData(contentDatas);
+                    removeIndexBeforeItem(index0xf7+1);
+                    //解析完了要清空
+                    Log.d(TAG, "jiexiData: 满了，清除contentDatas");
+                    contentDatas.clear();
+                    index0xf7 = -1;
                 }
             }
+        }
+    }
+
+    /**
+     * 解析内容数据
+     * @param datas
+     */
+    private void parseContentData(List<Byte> datas) {
+        byte[] bytes = new byte[datas.size()];
+        for (int i = 0;i<datas.size();i++){
+            bytes[i] = datas.get(i);
+        }
+        ///系统功能信息 0x86
+        if (datas.get(3) == BLE_CMD_SYSTEM_SURPPORT_FUNCTION_REPORT) {
+            SystemConfigInfo info = new SystemConfigInfo();
+            analysisFromBleData0x86(bytes,info);
+            Log.d(TAG, "judgeDataType: "+info.getChannelNumber());
+        } else if (datas.get(3) == (byte)BLE_CMD_SYSTEM_CONFIG_REPORT) {
+            //0x85
+//            [self parseSystemStatus0X85:datas];
+        } else if (datas.get(3) == (byte) BLE_CMD_ALARM_ENABLE_REPORT) {
+            //0x84
+//            [self parseAlertStatus0X84:datas];
+            SystemAlertInfo info = new SystemAlertInfo();
+            parseAlertStatus0X84(bytes,info);
+        } else if (datas.get(3) == (byte)BLE_CMD_SYSTEM_TIME_REPORT) {
+            //0x83
+            SystemTimeInfo info = new SystemTimeInfo();
+            parseSystemTime0x83(bytes,info);
+            Log.d(TAG, "judgeDataType 000: "+ JSON.toJSONString(info));
+        } else  if (datas.get(3) == (byte)BLE_CMD_REAL_TIME_SINGLE_ECG ||datas.get(3)==(byte) BLE_CMD_HISTORY_SINGLE_ECG) {
+            //0x80或者0x81 解析实时数据或者是历史数据
             BTDataInfo info = new BTDataInfo();
-            parseECGData(datas2,info);
-            Log.d(TAG, "parseRealTimeWaveData: info-->"+info.PacketId);
-            Log.d(TAG, "parseRealTimeWaveData: "+JSON.toJSONString(currentWaveData));
-            Log.d(TAG, "parseRealTimeWaveData: ....");
-     /*     BTDataInfo dataInfo;
-            memcpy(&dataInfo,contentBytes,sizeof(BTDataInfo));
-//        NSData *pointData = [NSData dataWithBytes:dataInfo.Data length:sizeof(dataInfo.Data)];
+            parseECGData(bytes,info);
 
-            //TODO 发送消息 确认收到
-            BleControl.getInstance().writeBuffer();
+        }else{
+            //实时心电数据
 
-        [self confirmWaveDataReceiveSuccessWithDataId:dataInfo.PacketId andType:tempByte[3]];
-            dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-            dispatch_async(queue, ^{
-            ///注意这个是否正确
-            ///数据处理放到异步线程
-            if (allByte[3] == BLE_CMD_HISTORY_SINGLE_ECG) {
-                ///历史数据下标加1
-                currentHistoryIndex +=1;
-                NSString *numStr =  [NSString stringWithFormat:@"%d",dataInfo.PacketId];
-                if (![haveSendHistoryIDArr containsObject:numStr]) {
-                 [haveSendHistoryIDArr addObject:numStr];
-                }
-                //添加到本地数组
-            [self addSaveModelArrWithDataInfo:dataInfo];
-            [self reGetWaveDateWithArr:needSendHistoryIDArr];
-            }else{
-                ///解析数据后添加到显示数组
-         [self parsingTheRawDataWithDataInfo:dataInfo];
-         [self addSaveModelArrWithDataInfo:dataInfo];
-            }
-        });
-*/
-            currentWaveData .clear();
-            currentWaveData = new ArrayList<>();
-            ///粘包中数据拆分进行下一次解析
-            ///获取截取位置
-            int subIndex = 0;
-            for (int i = 0; i < datas.length-1; i ++) {
-                if (datas[i] == 0xf7 && datas[i+1] == 0x7f) {
-                    subIndex = i+1;
-                }
-            }
-            Byte[] subBytes = new Byte[datas.length-subIndex];
-            for (int i = 0; i < datas.length-1; i ++) {
-                subBytes[i] = datas[subIndex+i];
-            }
-            if (subBytes.length < 3) {
-                ///直接拼接
-                for (int i = 0;i<subBytes.length;i++){
-                    currentWaveData.add(subBytes[i]);
-                }
-                return;
-            }
-            if (subBytes[0] == 0x7f && (subBytes[3]==BLE_CMD_REAL_TIME_SINGLE_ECG || subBytes[3]==BLE_CMD_HISTORY_SINGLE_ECG)) {
-                ///获取长度
-                int length = (int) ((subBytes[1] & 0xFF)| ((subBytes[2] & 0xFF)<<8));
-                currentWaveDataLength = length;
-                currentWaveData.clear();
-                for (int i = 0;i<subBytes.length;i++){
-                    currentWaveData.add(subBytes[i]);
-                }
-            }
         }
+        Log.d(TAG, "parseContentData: fffff");
+    }
+
+    /**
+     * 解析报警开关数据
+     * @param datas
+     * @param info
+     */
+    public native void parseAlertStatus0X84(byte[] datas, SystemAlertInfo info);
+
+    /**
+     * 根据两个字节值获取长度
+     */
+    public static int getContentLength(byte b1,byte b2)
+    {
+        return (b2&0xff)<< 8 | (b1&0xff);
     }
 
 
     /**
-     * 搜索包头
+     * 移除0x7f之前的所有数据
+     * @param index
+     * @return
      */
-    private void searchDataHeader() {
-        //包头不正确时
-        //循环检索是否有包头 如果有，则表示为包头的下标值
-        int subIndex = -1;
-        if(currentWaveData == null){
-            return;
+    private void removeIndexBeforeItem(int index){
+        for (int i = 0;i<index;i++){
+            allData.remove(i);
         }
-        for (int i = 0; i < currentWaveData.size()-1; i ++) {
-            byte values = currentWaveData.get(i);
-            if (values == 0x7f  ) {
-                subIndex = i;
+        //现在0x7f排在第一位了
+        index0x7f = 0;
+    }
+
+    /**
+     * 在allData中寻找0x7f(数据头) 找到就不找了
+     * @return
+     */
+    private void find0x7fInAllData(){
+        index0x7f = -1;
+        for (int i = 0;i<allData.size();i++){
+            if(allData.get(i) == (byte)0x7f){//127 为16进制0x7f
+                index0x7f = i;
+                Log.d(TAG, "find0x7fInAllData: index0x7f = "+i);
+                break;
             }
-        }
-        ///检测到了包头
-        if (subIndex != -1) {
-            Byte[] subBytes = new Byte[currentWaveData.size()-subIndex];
-            for (int i = 0; i < subBytes.length-1; i ++) {
-                subBytes[i]  = currentWaveData.get(subIndex+i);
-            }
-            ///重新拼接
-            currentWaveData.clear();
-            for (int i = 0;i<subBytes.length;i++){
-                currentWaveData.add(subBytes[i]);
-            }
-        }else{
-            currentWaveData.clear();
         }
     }
+
+    /**
+     * 判断数据是否包含头尾
+     * @return
+     */
+    private boolean hasHeadOrEnd(){
+        for (int i = 0;i<allData.size();i++){
+            if(allData.get(i) == 0x7f||allData.get(i) == 0xf7){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 把接受到的数据放到allData中
+     * @param datas
+     */
+    private void addAllDatas(byte[] datas) {
+        for (byte b:datas){
+            allData.add(b);
+        }
+    }
+
 
     /**
      * 解析数据类型0x83
@@ -318,4 +323,6 @@ public class JNIUtils {
      * @param info
      */
     private native void parseECGData(byte[] datas2, BTDataInfo info);
+
+
 }
