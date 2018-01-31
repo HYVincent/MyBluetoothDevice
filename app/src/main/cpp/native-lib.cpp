@@ -159,7 +159,7 @@ jarray analysis0x86(jbyte *datas);
 extern "C"
 JNIEXPORT jbyteArray JNICALL
 Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_getSystemFunction0x18(JNIEnv *env,
-                                                                            jobject instance) {
+                                                                                jobject instance) {
 
     jbyte  frameBeforeBase64 [6];
     ///命令头
@@ -518,10 +518,82 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_parseECGData(JNIEnv *e
 //        double    D
 //        void    V
         //设置属性
-//        fid = (env)->GetFieldID(clazz, "Year", "I");
-//        (env)->SetIntField(infoxx,fid,info.Year);
+        fid = (env)->GetFieldID(clazz, "PacketId", "I");
+        (env)->SetIntField(infoxx,fid,info.PacketId);
+
+        fid = (env)->GetFieldID(clazz,"DataLen","I");
+        (env)->SetIntField(infoxx,fid,info.DataLen);
+
+        /*  fid = (env)->GetFieldID(clazz,"","[I");
+
+          jintArray result;
+          result = env->NewIntArray(sizeof(info.PaceFlag));
+          jint *h = new jint[sizeof(info.PaceFlag)];
+          for (int i = 0; i < sizeof(info.PaceFlag); ++ i) {
+              h[i] = (jint)i;
+          }
+          env->SetIntArrayRegion(result,0,sizeof(info.PaceFlag),h);
+          env->SetObjectField(infoxx,fid,result);*/
+
+      /*  //找到内部类对象
+        jclass Time = env->FindClass("Lcom/example/vincent/mybluetoothdevice/entity/BTDataInfo$TimeAndSysStatus$TimeInfo");
+
+        if(Time != 0){
+            //设置属性
+            fid = (env)->GetFieldID(Time, "Year", "I");
+            (env)->SetIntField(infoxx,fid,info.TimeSysStatus.Time.Year);
+
+            fid = (env)->GetFieldID(Time,"Month","I");
+            env->SetIntField(infoxx,fid,info.TimeSysStatus.Time.Month);
+
+            fid = (env)->GetFieldID(Time,"Day","I");
+            env->SetIntField(infoxx,fid,info.TimeSysStatus.Time.Day);
+
+            fid = (env)->GetFieldID(Time,"Min","I");
+            env->SetIntField(infoxx,fid,info.TimeSysStatus.Time.Min);
+
+            fid = (env)->GetFieldID(Time,"Hour","I");
+            env->SetIntField(infoxx,fid,info.TimeSysStatus.Time.Hour);
+
+            fid = (env)->GetFieldID(Time,"Sec","I");
+            env->SetIntField(infoxx,fid,info.TimeSysStatus.Time.Sec);
+        } else{
+            LOGD("time = 0");
+        }
+
+        jclass status = (env)->FindClass("Lcom/example/vincent/mybluetoothdevice/entity/BTDataInfo$TimeAndSysStatus$Status;");
+        if(status != 0){
+            fid = (env)->GetFieldID(status,"Resv","I");
+            env->SetIntField(infoxx,fid,info.TimeSysStatus.Status.Resv);
+        } else{
+            LOGD("status = 0");
+        }
+
+        jclass systemStatus = (env)->FindClass("Lcom/example/vincent/mybluetoothdevice/entity/BTDataInfo$TimeAndSysStatus$Status$SystemDataStatus;");
+        if(systemStatus != 0){
+            fid = (env)->GetFieldID(systemStatus,"ResvTime","I");
+            env->SetIntField(infoxx,fid,info.TimeSysStatus.Status.SysSta.ResvTime);
+            ///导联状态
+            fid = (env)->GetFieldID(systemStatus,"LeadOff","I");
+            env->SetIntField(infoxx,fid,info.TimeSysStatus.Status.SysSta.LeadOff);
+            ///不适标记  //1是有标记 0是没有标记。
+            fid = (env)->GetFieldID(systemStatus,"PatientFlag","I");
+            env->SetIntField(infoxx,fid,info.TimeSysStatus.Status.SysSta.PatientFlag);
+            ///PACE 标记
+            fid = (env)->GetFieldID(systemStatus,"PaceEnableSta","I");
+            env->SetIntField(infoxx,fid,info.TimeSysStatus.Status.SysSta.PaceEnableSta);
+            //工频陷波状态
+            fid = (env)->GetFieldID(systemStatus,"PowerFreqSta","I");
+            env->SetIntField(infoxx,fid,info.TimeSysStatus.Status.SysSta.PowerFreqSta);
+            ///预留
+            fid = (env)->GetFieldID(systemStatus,"Resv","I");
+            env->SetIntField(infoxx,fid,info.TimeSysStatus.Status.SysSta.Resv);
+        } else{
+            LOGD("systemStatus = 0");
+        }*/
     }
 }
+
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -537,7 +609,7 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_parseAlertStatus0X84(J
 
     SystemAlertInfo info;
     //把jbyte转为结构体
-    memcpy(&info,mContent,sizeof(SystemConfigInfo));
+    memcpy(&info, mContent, sizeof(SystemConfigInfo));
     env->ReleaseByteArrayElements(datas_, datas, 0);
 
     jclass clazz;
@@ -546,19 +618,20 @@ Java_com_example_vincent_mybluetoothdevice_utils_JNIUtils_parseAlertStatus0X84(J
     clazz = (env)->GetObjectClass(infos);
     if (0 == clazz) {
         LOGD("获取对象失败");
-    } else{
+    } else {
         //设置属性
         fid = (env)->GetFieldID(clazz, "LowPowerAlert", "I");
-        (env)->SetIntField(infos,fid,info.LowPowerAlert);
+        (env)->SetIntField(infos, fid, info.LowPowerAlert);
 
-        fid = (env)->GetFieldID(clazz,"FlashAlert","I");
-        env->SetIntField(infos,fid,info.FlashAlert);
+        fid = (env)->GetFieldID(clazz, "FlashAlert", "I");
+        env->SetIntField(infos, fid, info.FlashAlert);
 
-        fid = (env)->GetFieldID(clazz,"LeadAlert","I");
-        env->SetIntField(infos,fid,info.LeadAlert);
+        fid = (env)->GetFieldID(clazz, "LeadAlert", "I");
+        env->SetIntField(infos, fid, info.LeadAlert);
 
-        fid = (env)->GetFieldID(clazz,"BloothStatusAlert","I");
-        env->SetIntField(infos,fid,info.BloothStatusAlert);
+        fid = (env)->GetFieldID(clazz, "BloothStatusAlert", "I");
+        env->SetIntField(infos, fid, info.BloothStatusAlert);
 
-    env->ReleaseByteArrayElements(datas_, datas, 0);
+        env->ReleaseByteArrayElements(datas_, datas, 0);
+    }
 }
