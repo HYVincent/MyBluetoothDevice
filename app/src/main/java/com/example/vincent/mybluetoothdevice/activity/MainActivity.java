@@ -68,13 +68,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 checkPermissions();
             }
         });
-        findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-            @Override
-            public void onClick(View view) {
-                BleControl.getInstance().stopBleScan(false);
-            }
-        });
         findViewById(R.id.btn_setting).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -209,12 +202,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             case BluetoothAdapter.STATE_OFF:
                 addLogs(2,"蓝牙已关闭!");
                 JNIUtils.getInstance().clearTotalData();
-                break;
-            case BleControl.BLE_STATUS_SCAN_FAILE:
-                addLogs(2,"如需扫描，请先断开蓝牙!");
-                break;
-            case BleControl.BLE_STATUS_SCAN_BREAK:
-                addLogs(2,"用户手动停止蓝牙扫描!");
                 break;
             case BleControl.BLE_STATUS_SCAN_CONNECTING:
                 addLogs(2,"正在连接蓝牙...");
