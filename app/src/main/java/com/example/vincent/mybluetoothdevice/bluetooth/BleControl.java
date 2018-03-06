@@ -74,7 +74,7 @@ public class BleControl {
     /**
      * 连接超时时间
      */
-    private static final long BLE_CONNECT_TIME_OUT = 10 * 1000;
+    private static final long BLE_CONNECT_TIME_OUT = 15 * 1000;
     /**
      * 蓝牙状态，打开
      */
@@ -308,7 +308,7 @@ public class BleControl {
      * 超时断开连接
      */
     private void delayConnectResponse(){
-        TimeCount timeCount = new TimeCount(BLE_STATUS_CONNECT_TIME_OUT, new TimeCount.TimeOnListener() {
+        TimeCount timeCount = new TimeCount(BLE_CONNECT_TIME_OUT, new TimeCount.TimeOnListener() {
             @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
             @Override
             public void finishAction() {
