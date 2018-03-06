@@ -379,6 +379,7 @@ public class BleControl {
         send();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void send() {
         if(needSendData.size() == 0){
             return;
@@ -411,7 +412,6 @@ public class BleControl {
         mBleGattCharacteristic.setValue(HexUtil.hexStringToBytes(needSendData.get(0)));
         //在主线程中写入数据
         MainHandler.getInstance().post(new Runnable() {
-            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
             @Override
             public void run() {
                 //发送

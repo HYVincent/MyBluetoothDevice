@@ -22,12 +22,6 @@
 
 
         <Button
-            android:id="@+id/button3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="停止搜索" />
-
-        <Button
             android:text="设置"
             android:id="@+id/btn_setting"
             android:layout_width="wrap_content"

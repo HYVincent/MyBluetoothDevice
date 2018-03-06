@@ -69,13 +69,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 checkPermissions();
             }
         });
-        findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-            @Override
-            public void onClick(View view) {
-                BleControl.getInstance().stopBleScan();
-            }
-        });
         findViewById(R.id.btn_setting).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
