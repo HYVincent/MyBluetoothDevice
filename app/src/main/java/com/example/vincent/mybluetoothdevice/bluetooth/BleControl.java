@@ -297,7 +297,9 @@ public class BleControl {
                  */
 //                mBleGatt = device.connectGatt(mContext, enable, mGattCallback); //该函数才是真正的去进行连接
                 //注意，上面一行代码连接蓝牙有时候会有133错误，下面的4个参数的连接方法解决这个错误
-                mBleGatt = device.connectGatt(mContext,enable,mGattCallback,2);
+//                mBleGatt = device.connectGatt(mContext,enable,mGattCallback,2);
+                //https://stackoverflow.com/questions/27280402/every-connection-request-is-being-treated-as-direct-connect-request-android-bl
+                mBleGatt = (new BleConnectionCompat(mContext)).connectGatt(device, enable, mGattCallback);
                 if(hasStatusChangeNotificationListener()){
                     statusChangeNotificationListener.onChangeStatus(BLE_STATUS_SCAN_CONNECTING);
                 }
