@@ -288,13 +288,16 @@ public class BleControl {
             Log.d(TAG, "connect: mBleGatt is null.");
         }*/
         MainHandler.getInstance().post(new Runnable() {
+            @RequiresApi(api = Build.VERSION_CODES.M)
             @Override
             public void run() {
                 /**
                  * 第二个参数表示是否需要自动连接。如果设置为 true, 表示如果设备断开了，会不断的尝试自动连接。设置为 false 表示只进行一次连接尝试。
                  第三个参数是连接后进行的一系列操作的回调，例如连接和断开连接的回调，发现服务的回调，成功写入数据，成功读取数据的回调等等
                  */
-                mBleGatt = device.connectGatt(mContext, enable, mGattCallback); //该函数才是真正的去进行连接
+//                mBleGatt = device.connectGatt(mContext, enable, mGattCallback); //该函数才是真正的去进行连接
+                //注意，上面一行代码连接蓝牙有时候会有133错误，下面的4个参数的连接方法解决这个错误
+                mBleGatt = device.connectGatt(mContext,enable,mGattCallback,2);
                 if(hasStatusChangeNotificationListener()){
                     statusChangeNotificationListener.onChangeStatus(BLE_STATUS_SCAN_CONNECTING);
                 }
