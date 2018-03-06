@@ -24,6 +24,7 @@ import com.example.vincent.mybluetoothdevice.bluetooth.BluetoothEntity;
 import com.example.vincent.mybluetoothdevice.entity.DataEntity;
 import com.example.vincent.mybluetoothdevice.utils.HexUtil;
 import com.example.vincent.mybluetoothdevice.utils.JNIUtils;
+import com.example.vincent.mybluetoothdevice.utils.MainHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onClick(View view) {
-                BleControl.getInstance().stopBleScan(false);
+                BleControl.getInstance().stopBleScan();
             }
         });
         findViewById(R.id.btn_setting).setOnClickListener(new View.OnClickListener() {
@@ -210,12 +211,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 addLogs(2,"蓝牙已关闭!");
                 JNIUtils.getInstance().clearTotalData();
                 break;
-            case BleControl.BLE_STATUS_SCAN_FAILE:
-                addLogs(2,"如需扫描，请先断开蓝牙!");
-                break;
-            case BleControl.BLE_STATUS_SCAN_BREAK:
-                addLogs(2,"用户手动停止蓝牙扫描!");
-                break;
             case BleControl.BLE_STATUS_SCAN_CONNECTING:
                 addLogs(2,"正在连接蓝牙...");
                 refreshView(connectPosition,BleControl.BLE_STATUS_SCAN_CONNECTING);
@@ -259,10 +254,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 break;
             case BleControl.BLE_STATUS_SCAN_START:
                 addLogs(2,"开始扫描蓝牙..");
-                if(bluetoothDevices != null && bluetoothDevices.size()>0){
-                    bluetoothDevices.clear();
-                    adapter.setDatas(bluetoothDevices);
-                }
+                MainHandler.getInstance().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(bluetoothDevices != null && bluetoothDevices.size()>0){
+                            bluetoothDevices.clear();
+                            adapter.setDatas(bluetoothDevices);
+                        }
+                    }
+                });
                 break;
             case BleControl.BLE_STATUS_NO_CONNECTED:
                 addLogs(2,"数据发送失败，蓝牙未连接!");
@@ -360,7 +360,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 connectPosition = position;
                 if(BleControl.getInstance().isConnect()){
                     addLogs(2,"手动断开蓝牙..");
-                    BleControl.getInstance().disConnection();
+                    BleControl.getInstance().disConnection(false);
                 }else {
                     BleControl.getInstance().connect(bluetoothDevices.get(position).getAddress(),true);
                 }
